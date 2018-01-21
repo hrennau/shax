@@ -1,0 +1,4 @@
+<toolSettings toolName="shax">
+  <namespace func="http://www.ttools.org/shax/ns/xquery-functions" error="http://www.ttools.org/shax/ns/error" struct="http://www.ttools.org/shax/ns/structure"/>
+  <flavor>basex79</flavor>
+</toolSettings>
