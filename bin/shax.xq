@@ -1,7 +1,7 @@
 (:
  : shax - 
  :
- : @version 2017-12-09T22:46:45.424+01:00 
+ : @version 2018-01-21T22:09:14.762+01:00 
  :)
 
 import module namespace tt="http://www.ttools.org/xquery-functions" at
@@ -85,9 +85,9 @@ declare variable $toolScheme :=
       <param name="format" type="xs:string?" default="ttl" fct_values="xml, ttl"/>
     </operation>
     <operation name="xsd" type="item()+" func="xsdOp" mod="xsd.xqm" namespace="http://www.ttools.org/shax/ns/xquery-functions">
-      <param name="shax" type="docFOX*" sep="SC" fct_minDocCount="1" pgroup="input"/>
+      <param name="shax" type="docFOX+" sep="SC" fct_minDocCount="1" pgroup="input"/>
+      <param name="odir" type="directory" fct_dirExists="true"/>
       <pgroup name="input" minOccurs="1"/>
-      <param name="format" type="xs:string?" default="ttl" fct_values="xml, ttl"/>
     </operation>
     <operation name="_help" func="_help" mod="tt/_help.xqm">
       <param name="default" type="xs:boolean" default="false"/>

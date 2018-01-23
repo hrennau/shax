@@ -296,6 +296,14 @@ declare function m:_getParam($paramElem as element())
         else if ($itemType eq 'catFOX') then
             for $item in $untypedItems return $item
             
+        else if ($itemType eq 'jsonURI') then
+            for $item in $untypedItems 
+            let $uri := replace($item, '\\', '/')
+            let $text := tt:unparsed-text($uri)
+            let $json := json:parse($text)
+            return
+                json:parse($text)
+                    
         else if ($itemType eq 'textURI') then
             for $item in $untypedItems 
             let $uri := replace($item, '\\', '/')
@@ -374,6 +382,8 @@ declare function m:_getParam($paramElem as element())
                     $encoding, $sep, $delim, $header, $names, $fromRec, $toRec)
 :)                    
         else if ($itemType eq 'csvFOX') then
+            for $item in $untypedItems return m:resolveRcat($item)
+        else if ($itemType eq 'jsonFOX') then
             for $item in $untypedItems return m:resolveRcat($item)
         else if ($itemType eq 'directory') then         
             for $item in $untypedItems return $item

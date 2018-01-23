@@ -238,6 +238,15 @@ declare function m:_parseParamValueItem($context as element(context)?,
                 if (tt:unparsed-text-available($uri, $encoding)) then $vamod else
                     m:createStandardTypeError($context, $name, $itemType, $vamod, 
                         ': no text resource at this location')
+        else if ($itemType eq 'jsonURI') then  
+            let $ok :=        
+                if (tt:unparsed-text-available($itemText)) then
+                    let $json := try {json:parse(tt:unparsed-text($itemText))} catch * {()}
+                    return exists($json)
+                else false()
+            return
+                if ($ok) then $itemText else 
+                    m:createStandardTypeError($context, $name, $itemType, trace($itemText, 'ITEM_TEXT: '), ': no JSON document at this location')
         else if ($itemType eq 'csvURI') then
             let $vamod := m:_getValueAndModifiers($itemText, $name, 'csvURI')
             return if ($vamod/self::z:errors) then $vamod else            
@@ -313,6 +322,12 @@ declare function m:_parseParamValueItem($context as element(context)?,
             let $rcat := tt:rcatFromFoxpath($vamod, 'csv', 'xcsv', $vamod/@encoding, $vamod) return            
                 if ($rcat and not($rcat/self::z:errors)) then $rcat else               
                     m:createStandardTypeError($context, $name, $itemType, $vamod, 
+                        concat(': no valid directory filter descriptor; msg=', string-join($rcat/z:error/@msg, '; ')))
+                        
+        else if ($itemType eq 'jsonFOX') then
+            let $rcat := tt:rcatFromFoxpath($itemText, 'json', 'jsonx', (), ()) return            
+                if ($rcat and not($rcat/self::z:errors)) then $rcat else               
+                    m:createStandardTypeError($context, $name, $itemType, $itemText, 
                         concat(': no valid directory filter descriptor; msg=', string-join($rcat/z:error/@msg, '; ')))
 
         else if ($itemType eq 'catDFD') then

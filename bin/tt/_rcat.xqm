@@ -113,6 +113,8 @@ declare function m:resolveRcat($rcat as node()?, $pquery as xs:string?)
             m:_resolveRcat_lines($rcat)
         else if ($targetFormat eq 'xcsv') then
             m:_resolveRcat_xcsv($rcat)
+        else if ($targetFormat eq 'jsonx') then
+            m:_resolveRcat_jsonx($rcat)
         else
             tt:createError('INVALID_ARG', concat('Invalid rcat passed to ',
                 '''resolveRcat'' - it specifies an unexpected target ',
@@ -399,6 +401,27 @@ declare function m:_resolveRcat_xcsv($rcat as node()?)
             m:parseCsv(resolve-uri($uri, base-uri($uri/..)), 
                        $encoding, $sep, $delim, $header, $names, $fromRec, $toRec)
 };
+
+(:~
+ : Resolves an rcat to jsonx documents.
+ :
+ : @param rcat the rcat document (document node
+ :    or root element)
+ : @return the xml-csv documents
+ :)
+declare function m:_resolveRcat_jsonx($rcat as node()?)
+        as element()* { 
+    let $rcat := $rcat/descendant-or-self::*[1]   
+    return if ($rcat/self::z:errors) then $rcat else
+    
+    let $encoding := ($rcat/@encoding, 'ISO-8859-1')[1]
+    return    
+        for $uri in $rcat//@href
+        let $text := try {tt:unparsed-text($uri)} catch * {()}
+        return
+            try {json:parse($text)/*} catch *  {()}
+};
+
 
 (:
  :    c o n s t r u c t    r c a t

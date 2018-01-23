@@ -26,6 +26,14 @@ declare namespace z="http://www.ttools.org/shax/ns/structure";
 declare namespace shax="http://shax.org/ns/model";
 declare namespace xsd="http://www.w3.org/2001/XMLSchema";
 
+(:~
+ : Edits one or several SHAX models by recursively expanding any imports. 
+ : The result is a single document with a <shax:models> root element, which
+ : has <shax:model> child elements.
+ :
+ : @param models the SHAX models to be edited
+ : @return a <shax:models> element
+ :)
 declare function f:expandImports($models as element(shax:model)+)
         as element(shax:models) {
     let $uris := $models/base-uri(.)

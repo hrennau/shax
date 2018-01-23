@@ -9,9 +9,11 @@
 (:~@operations
    <operations>
       <operation name="xsd" type="item()+" func="xsdOp">     
-         <param name="shax" type="docFOX*" sep="SC" fct_minDocCount="1" pgroup="input"/>        
+         <param name="shax" type="docFOX+" sep="SC" fct_minDocCount="1" pgroup="input"/>        
+         <param name="odir" type="directory" fct_dirExists="true"/>
+         <param name="ofile" type="xs:string?"/>
+         <param name="osuffixes" type="xs:string*"/>
          <pgroup name="input" minOccurs="1"/>   
-         <param name="format" type="xs:string?" default="ttl" fct_values="xml, ttl"/>
       </operation>
     </operations>  
 :)  
@@ -28,6 +30,7 @@ import module namespace tt="http://www.ttools.org/xquery-functions" at
 
 import module namespace i="http://www.ttools.org/shax/ns/xquery-functions" at
     "constants.xqm",
+    "namespaceTools.xqm",
     "shaclWriter.xqm",
     "util.xqm",
     "xsdUtil.xqm";
@@ -38,7 +41,7 @@ declare namespace xsd="http://www.w3.org/2001/XMLSchema";
 declare namespace xs="http://www.w3.org/2001/XMLSchema";
 
 (:~
- : Transforms a shax document into a XSD documents.
+ : Transforms a SHAX document into XSD documents.
  :
  : @param request the operation request
  : @return the RDF triples of a SHACL shape
@@ -46,18 +49,88 @@ declare namespace xs="http://www.w3.org/2001/XMLSchema";
 declare function f:xsdOp($request as element())
         as item()+ {
     let $shax := tt:getParams($request, 'shax')/*   
-    let $xsd := f:shax2xsd($shax)
-    return
-        $xsd
+    let $odir := tt:getParams($request, 'odir')
+    let $ofile :=
+        let $explicit := tt:getParams($request, 'ofile')
+        return
+            if ($explicit) then $explicit else
+                $shax[1]/root()/replace(replace(document-uri(.), '\.[^.]+$', ''), '^.+/', '')
+    let $osuffixes := tt:getParams($request, 'osuffixes')
+    let $xsds := f:shax2xsd($shax)
+    return (
+        f:writeXsds($xsds, $odir, $ofile, $osuffixes),
+        $xsds
+    )
 };   
 
+declare function f:writeXsds($xsds as element(xs:schema)+,
+                             $odir as xs:string,
+                             $ofile as xs:string, 
+                             $osuffixes as xs:string*)
+        as empty-sequence() {
+    let $ofileBase := replace($ofile, '\.xsd$', '')
+    let $odir := replace($odir, '([^/])$', '$1/')
+    return
+        if (count($xsds) eq 1) then
+            let $fname := $odir || '/' || $ofileBase || '.xsd'
+            return
+                file:write($fname, $xsds)
+        else
+            let $xsdsSorted := sort($xsds, (), function($item){$item/@targetNamespace/lower-case(.)}) 
+            let $xsdDescriptors :=
+                for $xsd at $pos in $xsdsSorted
+                let $tns := $xsd/@targetNamespace/string()
+                let $importTns := i:schemaRequiredNamespaces($xsd)
+                let $fname := 
+                    let $suffix := ($osuffixes[$pos], $pos)[1]
+                    return
+                        $odir || $ofileBase || $suffix || '.xsd'
+                return
+                    <xsd fname="{$fname}" tns="{$tns}">{
+                        for $uri in $importTns return <importNamespace uri="{$uri}"/>
+                    }</xsd>
+            let $xsdTable := trace(
+                <xsds count="{count($xsdDescriptors)}">{
+                    $xsdDescriptors
+                }</xsds> , 'XSD_TABLE: ')
+            return
+                for $xsdInfo at $pos in $xsdTable/xsd
+                let $fname := $xsdInfo/@fname
+                let $imports :=
+                    for $uri in $xsdInfo/importNamespace/@uri
+                    let $importFname := $xsdTable/xsd[@tns eq $uri]/@fname
+                    return
+                        <xs:import namespace="{$uri}" schemaLocation="{$importFname}"/>
+                let $xsdElem := $xsdsSorted[$pos]
+                let $xsdWithImports :=
+                    element {node-name($xsdElem)} {
+                        f:copyNamespaces($xsdElem),
+                        $xsdElem/@*,
+                        $imports,
+                        $xsdElem/node()
+                    }
+                return
+                    file:write($fname, $xsdWithImports)
+};
+
 (:~
- : Maps a shax model to one or more XSD documents.
+ : Maps a SHAX model to one or more XSD documents. For each
+ : namespace used by a SHAX component, an XSD with the 
+ : corresponding target namespace is constructed.
  :)
-declare function f:shax2xsd($shax as element())
+declare function f:shax2xsd($models as element()+)
         as item()+ {
-    let $shax := $shax/f:addCardinalityAtts(.)        
-    let $comps := f:getXsdCompsRC($shax, ())
+    let $models := f:expandImports($models)        
+    let $models := $models/f:addCardinalityAtts(.)  
+    
+    (: normalize namespace bindings :)
+    let $nsmap := f:getShaxModelNamespaceMap($models)
+    let $models := f:normalizeShaxModelNamespaceBindings($models, $nsmap)
+    
+    (: construct schema components :)
+    let $comps := f:getXsdCompsRC($models, ())
+    
+    (: partition schema components by target namespace :)
     let $tnsComps :=
         map:merge(
             for $comp in $comps[self::xs:*]
@@ -65,31 +138,26 @@ declare function f:shax2xsd($shax as element())
             order by $tns
             return map:entry($tns, $comp)
         )
+        
+    (: construct schemas
+          note - imports are added later when mappings 
+                 namespace => schema location are available :)
     let $schemas :=
         for $tns in map:keys($tnsComps)
         let $myComps := $tnsComps($tns)
         let $tnsAtt :=
             if (not($tns)) then () else attribute targetNamespace {$tns}
-        let $nss :=
-            if (not($tns)) then () else
-            
-            let $comp1 := $myComps[1]
-            let $qname1 := $comp1/@name/resolve-QName(., ..)
-            let $prefix1 := $comp1/@shax:prefix
-            return
-                namespace {$prefix1} {$tns}
-            
+        let $namespaceBindings := $nsmap/z:ns/namespace {@prefix} {@uri}
         let $schema :=
             <xs:schema xmlns:shax="http://shax.org/ns/model">{
                 $tnsAtt,
-                $nss,                
+                $namespaceBindings,                
                 attribute elementFormDefault {'qualified'},
-                <xs:import namespace="http://shax.org/ns/model" schemaLocation="shax.xsd"/>,
                 $myComps
             }</xs:schema>
+
         return f:finalizeSchema($schema)            
     return
-        (: TO.DO - deal with multiple xsds :)
         $schemas
 };        
 
@@ -130,18 +198,23 @@ declare function f:getXsdCompsRC($n as node(), $tns as xs:string?)
         let $tnsAtt := attribute shax:tns {$tns}
         let $prefixAtt :=
             if (not($tns)) then () else attribute shax:prefix {prefix-from-QName($qname)}
-        let $baseType := ($n/@base, 'shax:objectBaseType')[1] 
+        let $baseType := $n/@extends 
+        let $sequence :=
+            <xs:sequence>{
+                for $c in $n/* return f:getXsdCompsRC($c, $tns)
+            }</xs:sequence>
         return
             <xs:complexType name="{$lname}" shax:tns="{$tns}">{
                 f:copyNamespaces($n),
                 $prefixAtt,
-                <xs:complexContent>{
-                    <xs:extension base="{$baseType}">{
-                        <xs:sequence>{
-                            for $c in $n/* return f:getXsdCompsRC($c, $tns)
-                        }</xs:sequence>
-                    }</xs:extension>
-                }</xs:complexContent>                    
+                if ($baseType) then
+                    <xs:complexContent>{
+                        <xs:extension base="{$baseType}">{
+                            $sequence
+                        }</xs:extension>
+                    }</xs:complexContent>
+                else
+                    $sequence
             }</xs:complexType>
 
     case element(shax:dataType) return
@@ -151,13 +224,54 @@ declare function f:getXsdCompsRC($n as node(), $tns as xs:string?)
         let $tnsAtt := attribute shax:tns {$tns}
         let $prefixAtt :=
             if (not($tns)) then () else attribute shax:prefix {prefix-from-QName($qname)}
+        let $memberTypes := $n/@memberTypes
+        let $itemDatatype := $n/@itemDatatype        
+        let $container := $n/@container
         return
-            <xs:simpleType name="{$lname}" shax:tns="{$tns}">{
+            <xs:simpleType>{
+                if (exists($qname)) then attribute name {$lname} else (),
+                attribute shax:tns {$tns},
                 $prefixAtt,
-                $n/@base/f:getXsdCompsRC(., $tns)
+                
+                (: union type :)
+                if ($memberTypes) then
+                    <xs:union memberTypes="{$memberTypes}"/>
+                
+                (: list type with item type reference :)
+                else if ($itemDatatype) then
+                    <xs:list itemType="{$itemDatatype}"/>
+                
+                (: list type with local declaration of item type :)
+                else if ($container) then
+                    let $itemType :=
+                        let $sourceDataType :=
+                            element {node-name($n)} {
+                                f:copyNamespaces($n),
+                                $n/(@* except (@name, @container, @minSize, @maxSize, @size)),
+                                $n/node()
+                            }
+                        return f:getXsdCompsRC($sourceDataType, $tns)
+                    let $itemTypeFacets := (
+                        $n/@minSize/<xs:minLength value="{.}"/>,
+                        $n/@maxSize/<xs:maxLength value="{.}"/>,
+                        $n/@size/(<xs:minLength value="{.}"/>, <xs:maxLength value="{.}"/>) 
+                    )
+                    return                        
+                        if (not($itemTypeFacets)) then 
+                            <xs:list>{$itemType}</xs:list>
+                        else
+                            <xs:restriction>{
+                                <xs:simpleType>
+                                   <xs:list>{$itemType}</xs:list>
+                                </xs:simpleType>,
+                                $itemTypeFacets
+                            }</xs:restriction>
+                (: none of the above :)
+                else                    
+                    $n/@base/f:getXsdCompsRC(., $tns)
             }</xs:simpleType>
 
-    case element(shax:model) return
+    case element(shax:models) | element(shax:model) return
             for $c in $n/node() return f:getXsdCompsRC($c, $tns)
 
     case element(shax:choice) return
@@ -209,7 +323,14 @@ declare function f:getXsdCompsRC($n as node(), $tns as xs:string?)
         let $useBaseName := f:editXsdTypeReference($baseName)
         return
             <xs:restriction base="{$useBaseName}">{
-                for $a in $n/../(@* except (@name, @base)) return f:getXsdCompsRC($a, $tns)
+                let $content :=
+                    for $a in $n/../(@* except (@name, @base)) 
+                    return f:getXsdCompsRC($a, $tns)
+                let $contentAtts := $content[. instance of attribute()]
+                return (
+                    $contentAtts,
+                    $content except $contentAtts
+                )
             }</xs:restriction>
 
     case attribute(pattern) return

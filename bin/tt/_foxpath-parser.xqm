@@ -1674,6 +1674,9 @@ declare function f:parseMapExprRC($text as xs:string, $context as map(*))
  :)     
 declare function f:parsePathExpr($text as xs:string, $context as map(*))
         as item()* {
+    (: hjr, 20180112 - exclude confusion with FLWOR expression :)
+    if (matches($text, '^(let|for)\s+\$')) then $text else
+    
     let $DEBUG := f:trace($text, 'parse.path', 'INTEXT_PATH: ')   
     let $FOXSTEP_SEPERATOR_REGEX := map:get($context, 'FOXSTEP_SEPERATOR_REGEX')
     let $NODESTEP_SEPERATOR_REGEX := map:get($context, 'NODESTEP_SEPERATOR_REGEX')    
@@ -1964,15 +1967,24 @@ declare function f:parseStep($text as xs:string?,
 declare function f:parseFoxAxisStep($text as xs:string?, $context as map(*))
         as item()* {
     let $DEBUG := f:trace($text, 'parse.fox_axis_step', 'INTEXT_FOX_AXIS_STEP: ')
-    let $acceptAbbrevSyntax := map:get($context, 'IS_CONTEXT_URI') eq true()
+    let $isContextUri := $context?IS_CONTEXT_URI    
+    let $acceptAbbrevSyntax := $isContextUri
     let $FOXSTEP_SEPERATOR := map:get($context, 'FOXSTEP_SEPERATOR')
     let $FOXSTEP_NAME_DELIM := map:get($context, 'FOXSTEP_NAME_DELIM')
     let $FOXSTEP_ESCAPE := map:get($context, 'FOXSTEP_ESCAPE')
-    
     let $text :=
-        if (not(starts-with($text, $FOXSTEP_SEPERATOR))) then $text
-        else
+        if (starts-with($text, $FOXSTEP_SEPERATOR)) then
             concat('descendant-or-self~::*', $FOXSTEP_SEPERATOR, substring($text, 2))
+        (: hjr, 20180112: take care of this scenario: let $x := .. return ...
+           the best way to do this is replace .. with parent~::*;
+           however, if text starts with .. and the context is node,
+           then this is a node axis step => return ! :)
+        else if (matches($text, '^\.\.\s*[^.]')) then 
+            if ($isContextUri) then concat('parent~::*', substring($text, 3))
+            else ()
+        else $text
+    return if (not($text)) then $text else
+            
     let $reverseAxis :=
         (: .. or ... :)
         if ($acceptAbbrevSyntax and matches($text, '(^\.\.(\.)?)')) then

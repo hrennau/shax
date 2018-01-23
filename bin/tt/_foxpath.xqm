@@ -94,7 +94,7 @@ declare function f:resolveFoxpath($foxpath as xs:string?,
  :)
 declare function f:resolveFoxpath($foxpath as xs:string, 
                                   $ebvMode as xs:boolean?, 
-                                  $context as xs:string?,
+                                  $context as item()?,
                                   $options as map(*)?,
                                   $externalVariableBindings as map(xs:QName, item()*)?)
         as item()* {
@@ -642,10 +642,12 @@ declare function f:resolveFoxAxisStep($axisStep as element()+,
                     [not($regex) or matches(replace(., '.*/', ''), $regex, 'i')]            
                     ! concat($prefix, '/', .)
                     (: [not($tail) or file:is-dir(.)] :)  (: not any more true: following steps may be reverse steps :)
-(:                   
-                let $DUMMY := trace((), concat('AFTER_LIST_DESCENDANTS ',
+(:
+                let $DUMMY := trace((), concat('AFTER_LIST_DESCENDANTS_COUNT ',
                                         $axis, '~::', $name, ' (', count($descendants), '): '))
-:)                                        
+                let $DUMMY := trace($descendants, concat('AFTER_LIST_DESCENDANTS ',
+                                        $axis, '~::', $name, ': '))
+:)
                 let $descendants := distinct-values($descendants)
                 let $ctxtFiles :=
                     if (not($axis eq 'descendant-or-self')) then $descendants
@@ -927,7 +929,7 @@ declare function f:testPredicates($items as item()*,
     let $last := count($items)
     let $itemsFiltered :=
         let $last := count($items)
-        for $item at $pos in $items        
+        for $item at $pos in $items   
         let $predicateValue := f:resolveFoxpathRC($predicate, false(), $item, $pos, $last, $vars, $options) 
         return
             if ($predicateValue instance of xs:decimal) then $item[$predicateValue eq $pos]
@@ -1921,20 +1923,18 @@ declare function f:resolveFunctionCall($call as element(),
        an imported module, it is called from here
     :)
     else if ($call/@name = ('resolve-foxpath', 'fox')) then
-        let $expression := 
-        let $explicit := $call/*[1]/f:resolveFoxpathRC(., false(), $context, $position, $last, $vars, $options)
+        (: hjr, 20180112: the initial context must be set to URI, unless the context says otherwise :)
+        let $expression :=
+            let $explicit := $call/*[1]/f:resolveFoxpathRC(., false(), $context, $position, $last, $vars, $options)
+            return
+                ($explicit, $context)[1]
+        let $useOptions :=
+            if ($context and $context instance of node()) then $options
+            else if ($context?IS_CONTEXT_URI) then $options
+            else
+                map:put($options, 'IS_CONTEXT_URI', true())
         return
-            ($explicit, $context)[1]
-        return
-(:
-declare function f:resolveFoxpath($foxpath as xs:string, 
-                                  $ebvMode as xs:boolean?, 
-                                  $context as xs:string?,
-                                  $options as map(*)?,
-                                  $externalVariableBindings as map(xs:QName, item()*)?)
-:)
-            i:resolveFoxpath($expression, false(), $context, $options, ())
-        
+            i:resolveFoxpath($expression, false(), $context, $useOptions, ())
     else
         i:resolveStaticFunctionCall($call, $context, $position, $last, $vars, $options)
 };      
