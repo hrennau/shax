@@ -36,6 +36,7 @@ import module namespace i="http://www.ttools.org/shax/ns/xquery-functions" at
     "xsdUtil.xqm";
     
 declare namespace z="http://www.ttools.org/shax/ns/structure";
+declare namespace zz="http://www.ttools.org/structure";
 declare namespace shax="http://shax.org/ns/model";
 declare namespace xsd="http://www.w3.org/2001/XMLSchema";
 declare namespace xs="http://www.w3.org/2001/XMLSchema";
@@ -147,7 +148,7 @@ declare function f:shax2xsd($models as element()+)
         let $myComps := $tnsComps($tns)
         let $tnsAtt :=
             if (not($tns)) then () else attribute targetNamespace {$tns}
-        let $namespaceBindings := $nsmap/z:ns/namespace {@prefix} {@uri}
+        let $namespaceBindings := $nsmap/zz:ns/namespace {@prefix} {@uri}
         let $schema :=
             <xs:schema xmlns:shax="http://shax.org/ns/model">{
                 $tnsAtt,
@@ -198,11 +199,26 @@ declare function f:getXsdCompsRC($n as node(), $tns as xs:string?)
         let $tnsAtt := attribute shax:tns {$tns}
         let $prefixAtt :=
             if (not($tns)) then () else attribute shax:prefix {prefix-from-QName($qname)}
-        let $baseType := $n/@extends 
+        let $baseType := $n/@extends
+
+        let $itemName := $n/@itemName
+        let $itemType := $n/@itemType     
+        let $minSize := $n/@minSize
+        let $maxSize := $n/@maxSize
+        
         let $sequence :=
-            <xs:sequence>{
-                for $c in $n/* return f:getXsdCompsRC($c, $tns)
-            }</xs:sequence>
+            if ($itemName) then
+                <xs:sequence>{
+                    <xs:element name="{$itemName}">{
+                        $minSize/attribute minOccurs {.},
+                        $maxSize/attribute maxOccurs {if (. eq '-1') then 'unbounded' else .},
+                        $itemType/attribute type {.}
+                    }</xs:element>
+                }</xs:sequence>
+            else
+                <xs:sequence>{
+                    for $c in $n/* return f:getXsdCompsRC($c, $tns)
+                }</xs:sequence>
         return
             <xs:complexType name="{$lname}" shax:tns="{$tns}">{
                 f:copyNamespaces($n),

@@ -464,7 +464,8 @@ declare function f:expandShax4RC($n as node())
             let $baseAtt := $propDecl/@base/attribute base {.}            
             let $typeAtt := $propDecl/@type/attribute type {.}            
             let $kindAtt := $propDecl/@kind/attribute nodeKind {.}
-            let $classAtt := $propDecl/@class/attribute class {.}      
+            let $classAtt := $propDecl/@class/attribute class {.}     
+            let $orderedAtt := $propDecl/@ordered/attribute ordered {.}
             let $facetAtts := f:getShaclFacets_atts($propDecl)            
             let $facetElems := f:getShaclFacets_elems($propDecl)
             let $cardAtt := f:getPropertyCardinality($propUse)
@@ -476,6 +477,7 @@ declare function f:expandShax4RC($n as node())
                     $kindAtt,
                     $classAtt,
                     $cardAtt,
+                    $orderedAtt,
                     $facetAtts,
                     $facetElems
                 }</shax:pshape>

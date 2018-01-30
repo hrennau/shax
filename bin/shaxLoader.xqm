@@ -167,26 +167,3 @@ declare function f:expandImportsRC($models as element(shax:model)+,
       return
          ($actImportContribution, $remainingImportsContribution, $remainingModelsContribution)
 };
-
-(:~
- : Normalizes a URI. Returns it without changes, unless the URI is
- : a file URI. In this case, reduces multiple slashes after 'file:' to
- : a single slash, puts drive letter lower-case and adds drive letter 'c' in
- : case the uri does not contain a drive letter.
- :
- : @param uri the uri to be normalized
- : @return the normalized uri
- :)
-declare function f:normalizeUri($uri as xs:string) {
-    if (not(matches($uri, '^\s*file:'))) then $uri else
-    
-    let $u := replace($uri, 'file:/+', 'file:/')
-    let $driveLetter := replace($u, '^file:/(.):.+', '$1')[not(. eq $u)]
-    return
-        if ($driveLetter) then
-            replace($u, '(file:/).(:.+)', concat('$1', lower-case($driveLetter), '$2'))
-        else
-            replace($u, '^(file:/)(.+)', '$1c:/$2') 
-};
-
-

@@ -41,10 +41,10 @@ import module namespace pt="http://www.ttools.org/xquery-functions" at "_constan
 
 declare copy-namespaces preserve, inherit;
 
-declare namespace z="http://www.xsdplus.org/ns/structure";
-declare namespace s="http://www.xsdplus.org/ns/structure";
+declare namespace z="http://www.ttools.org/structure";
+declare namespace s="http://www.ttools.org/structure";
 declare namespace xs="http://www.w3.org/2001/XMLSchema";
-declare namespace xe="http://www.xsdplus.org/ns/errors";
+declare namespace xe="http://www.ttools.org/errors";
 
 (:~
  : Adds an in-scope namespace to an element, if it does not already have it.
@@ -84,17 +84,25 @@ declare function m:addNSB($e as element()?,
  : @param nsmap a map associating namespace prefixes with URIs
  : @return a copy of the element with namespace bindings added
  :
- : @version: 20121202-1
+ : @version: 20180128-1
 :)
 declare function m:addNSBs($elem as element()?, 
                            $nsmap as element(z:nsMap)) 
       as element()? {
+   element {node-name($elem)} {
+       $nsmap/z:ns/namespace {@prefix} {@uri},
+       $elem/@*,
+       $elem/node()
+   }
+(: hjr, 20180128 - removed old version - support for XQuery 1.0 removed :)
+(:
    let $copy :=
       <z:mp>{
          $nsmap/*[@prefix/string()]/attribute {QName(@uri, concat(@prefix, ':', '_'))} {}, $elem
       }</z:mp>/*
    return
       document {$copy}/*
+:)      
 };
 
 (:~
@@ -493,79 +501,3 @@ declare function m:resolveNormalizedQNamePrefixed($name as xs:string,
    return
       QName($nsmap/*[@prefix eq $prefix]/@uri, $name)                      
 };
-
-(:
-   D E P R E C A T E D    F U N C T I O N S
-:)
-
-(:~
- : DEPRECATED - use 'addNSBs' instead.
- :
- : Adds namespace bindings to an element. The namespace bindings
- : are supplied as a namespace bindings map.
- :
- : @param elem the element
- : @param nsmap a map associating namespace prefixes with URIs
- : @return a copy of the element with namespace bindings added
-:)
-declare function m:addNSB($elem as element()?, $nsmap as element(z:nsMap)) as element()? {
-   <z:mp>{
-      $nsmap/*[@prefix/string()]/attribute {QName(@uri, concat(@prefix, ':', '_'))} {}, $elem
-   }</z:mp>/*
-};
-
-(:~
- : DEPRECATED - 'addNSB' instead.
- :
- : Adds an in-scope namespace to an element, if it does not already have it.
- : In the latter case, the element is returned unchanged. Special case: 
- : if the namespace URI of the in-scope namespace is empty, the element 
- : is returned with the default namespace removed, in order to allow 
- : referencing namespace-less elements from within the element. 
- :
- : Note: this function requires that copy namespaces modes contains 
- : 'inherited'.
- :
- : @param e the element to be modified
- : @param nsUri the namespace URI
- : @param prefix the prefix to be used
- :
- : @version: 20091212
- :)
-declare function m:addInscopeNamespace($e as element()?,
-                                       $nsUri as xs:string,
-                                       $prefix as xs:string) 
-                 as element()? {
-   if ($nsUri eq "") then 
-      <_tmp xmlns="">{$e}</_tmp>/*   (: remove default namespace :)
-   else if ($nsUri eq namespace-uri-for-prefix($prefix, $e)) then      
-      $e                             (: return unchanged :) 
-   else                              
-      element {QName($nsUri, string-join(($prefix[.], "_"), ":"))} 
-	          {$e}/*                 (: add binding via transient wrapper :)                                        
-};
-
-
-
-
-
-(: Stylus Studio meta-information - (c) 2004-2009. Progress Software Corporation. All rights reserved.
-
-<metaInformation>
-   <scenarios>
-      <scenario default="yes" name="Scenario1" userelativepaths="yes" externalpreview="no" useresolver="yes" url="" outputurl="" processortype="datadirect" tcpport="7864367" profilemode="0" profiledepth="" profilelength="" urlprofilexml="" commandline=""
-                additionalpath="" additionalclasspath="" postprocessortype="none" postprocesscommandline="" postprocessadditionalpath="" postprocessgeneratedext="" host="" port="0" user="" password="" validateoutput="no" validator="internal"
-                customvalidator="">
-         <advancedProperties name="DocumentURIResolver" value=""/>
-         <advancedProperties name="CollectionURIResolver" value=""/>
-         <advancedProperties name="ModuleURIResolver" value=""/>
-      </scenario>
-   </scenarios>
-   <MapperMetaTag>
-      <MapperInfo srcSchemaPathIsRelative="yes" srcSchemaInterpretAsXML="no" destSchemaPath="" destSchemaRoot="" destSchemaPathIsRelative="yes" destSchemaInterpretAsXML="no"/>
-      <MapperBlockPosition></MapperBlockPosition>
-      <TemplateContext></TemplateContext>
-      <MapperFilter side="source"></MapperFilter>
-   </MapperMetaTag>
-</metaInformation>
-:)

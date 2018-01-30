@@ -84,6 +84,8 @@ string-join((
         
 "@prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix shax: <http://shax.org/ns/model#> .
+@prefix nons: <http://shax.org/ns/nonamespace#> .
+@prefix e: <http://shax.org/ns/model/elementequivalent#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix xs:  <http://www.w3.org/2001/XMLSchema#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
@@ -147,6 +149,7 @@ declare function f:shaclFromShaxExpandedRC($n as node(),
         for $i in 1 to $level * $indent return ' ', '')
     let $prefix2 := $prefix || $prefix0
     let $prefix3 := $prefix2 || $prefix0
+    let $prefix4 := $prefix3 || $prefix0    
     let $lines :=
     
     typeswitch($n)
@@ -160,25 +163,48 @@ declare function f:shaclFromShaxExpandedRC($n as node(),
         for $c in $n/node() return f:shaclFromShaxExpandedRC($c, $level, $indent)
     
     case element(shax:pshape) return
+        let $prefixNext :=
+            if ($n/@ordered) then $prefix4 else $prefix2
         let $contentItems := (
-            $n/@path/concat($prefix2, 'sh:path ', .),             
-            $n/@minCount[not(. eq '0')]/concat($prefix2, 'sh:minCount ', .),             
-            $n/@maxCount[not(. eq '-1')]/concat($prefix2, 'sh:maxCount ', .),             
-            $n/@datatype/concat($prefix2, 'sh:datatype ', .),
-            $n/@class/concat($prefix2, 'sh:class ', .),                
-            $n/@nodeKind/concat($prefix2, 'sh:nodeKind ', f:shaclNodeKind(.), ' '),
-            $n/@node/concat($prefix2, 'sh:node ', .),             
-            $n/@minInclusive/concat($prefix2, 'sh:minInclusive ', .),
-            $n/@maxInclusive/concat($prefix2, 'sh:maxInclusive ', .),             
-            $n/@minExclusive/concat($prefix2, 'sh:minExclusive ', .),
-            $n/@maxExclusive/concat($prefix2, 'sh:maxExclusive ', .),             
-            $n/@minLength/concat($prefix2, 'sh:minLength ', .),             
-            $n/@maxLength/concat($prefix2, 'sh:maxLength ', .),             
-            $n/@pattern/concat($prefix2, 'sh:pattern "', ., '"'),             
-            $n/@flags/concat($prefix2, 'sh:flags "', ., '"'),
+            $n/@path/concat($prefix2, 'sh:path ', .),   
+            
+            if ($n/@ordered) then (
+                concat($prefix2, 'sh:node shax:ListType '),
+                concat($prefix2, 'sh:property ['),  
+                concat($prefix3, 'sh:path ([sh:zeroOrMorePath rdf:rest] rdf:first)')            
+            ) else (),
+            
+            $n/@minCount[not(. eq '0')]/concat($prefixNext, 'sh:minCount ', .),             
+            $n/@maxCount[not(. eq '-1')]/concat($prefixNext, 'sh:maxCount ', .),             
+            $n/@datatype/concat($prefixNext, 'sh:datatype ', .),
+            $n/@class/concat($prefixNext, 'sh:class ', .),                
+            $n/@nodeKind/concat($prefixNext, 'sh:nodeKind ', f:shaclNodeKind(.), ' '),
+            $n/@node/concat($prefixNext, 'sh:node ', .),             
+            $n/@minInclusive/concat($prefixNext, 'sh:minInclusive ', .),
+            $n/@maxInclusive/concat($prefixNext, 'sh:maxInclusive ', .),             
+            $n/@minExclusive/concat($prefixNext, 'sh:minExclusive ', .),
+            $n/@maxExclusive/concat($prefixNext, 'sh:maxExclusive ', .),             
+            $n/@minLength/concat($prefixNext, 'sh:minLength ', .),             
+            $n/@maxLength/concat($prefixNext, 'sh:maxLength ', .),             
+            $n/@pattern/concat($prefixNext, 'sh:pattern "', replace(., '\\', '\\\\'), '"'),             
+            $n/@flags/concat($prefixNext, 'sh:flags "', ., '"'),   
+            
+            if (not($n/@ordered)) then () else
+            concat($prefix2, ']'),
+            
             for $c in $n/node() return f:shaclFromShaxExpandedRC($c, $level + 1, $indent)             
         )
         let $content := for $item in $contentItems return concat($item, ' ;')
+        
+        let $content := (
+            for $item at $pos in $contentItems 
+            return
+                concat($item, ' ', 
+                    if (ends-with($item, '[')) then ' '
+                    else if (ends-with($item, ']')) then ' '
+                    else ';')
+            )
+
         return
             if ($n/parent::shax:shape) then (
                 concat($prefix, 'sh:property ['),
@@ -197,14 +223,14 @@ declare function f:shaclFromShaxExpandedRC($n as node(),
         let $datatypeNS := namespace-uri-from-QName($datatypeQName)
         let $isXsdType := $datatypeNS eq $f:URI_XSD
         let $extends := $n/@extends/concat($prefix2, 'sh:node ', .)      
-        let $values :=
+        let $values := 
             let $raw := $n/shax:value/string()
             return
                 if (empty($raw)) then ()
                 else if ($isXsdType and $datatypeLName = ('integer')) then $raw
                 else if ($isXsdType and $datatypeLName eq 'string') then $raw ! concat('"', ., '"')
                 else $raw ! concat('"', ., '"^^', $datatype)
-                
+
         let $contentItems    :=
         
           (: case: a union type :)
@@ -244,7 +270,7 @@ declare function f:shaclFromShaxExpandedRC($n as node(),
                         $n/@maxExclusive/concat($prefix3, 'sh:maxExclusive ', .),             
                         $n/@minLength/concat($prefix3, 'sh:minLength ', .),             
                         $n/@maxLength/concat($prefix3, 'sh:maxLength ', .),     
-                        $n/@pattern/concat($prefix3, 'sh:pattern "', ., '"'),             
+                        $n/@pattern/concat($prefix3, 'sh:pattern "', replace(., '\\', '\\\\'), '"'),             
                         $n/@flags/concat($prefix3, 'sh:flags "', ., '"'),
                         if (empty($values)) then () else concat($prefix3, 'sh:in (', string-join($values, ' '), ')') 
                     ),        
@@ -259,6 +285,7 @@ declare function f:shaclFromShaxExpandedRC($n as node(),
                 $n/@targetClass/concat($prefix2, 'sh:targetClass ', .),             
                 $n/@class/concat($prefix2, 'sh:class ', .),                
                 $n/@datatype/concat($prefix2, 'sh:datatype ', .),
+                $n/@node/concat($prefix2, 'sh:node ', .),                
                 $extends,
                 $n/@minInclusive/concat($prefix2, 'sh:minInclusive ', .),
                 $n/@maxInclusive/concat($prefix2, 'sh:maxInclusive ', .),             
@@ -266,7 +293,7 @@ declare function f:shaclFromShaxExpandedRC($n as node(),
                 $n/@maxExclusive/concat($prefix2, 'sh:maxExclusive ', .),             
                 $n/@minLength/concat($prefix2, 'sh:minLength ', .),             
                 $n/@maxLength/concat($prefix2, 'sh:maxLength ', .),             
-                $n/@pattern/concat($prefix2, 'sh:pattern "', ., '"'),             
+                $n/@pattern/concat($prefix2, 'sh:pattern "', replace(., '\\', '\\\\'), '"'),             
                 $n/@flags/concat($prefix2, 'sh:flags "', ., '"'),
                 if (empty($values)) then () else concat($prefix2, 'sh:in (', string-join($values, ' '), ')'),
 
@@ -334,8 +361,9 @@ declare function f:shaclFromShaxExpandedRC($n as node(),
             concat($prefix, 'sh:not'),
             $content
         )        
-
-    default return string($n)
+    case element(shax:property) return ()
     
-    return string-join($lines, '&#xA;')
+    default return string($n)[normalize-space($n)]
+    
+    return string-join($lines, '&#xA;')[exists($lines)]
 };

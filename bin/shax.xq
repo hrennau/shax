@@ -1,7 +1,7 @@
 (:
  : shax - 
  :
- : @version 2018-01-21T22:09:14.762+01:00 
+ : @version 2018-01-28T16:02:31.862+01:00 
  :)
 
 import module namespace tt="http://www.ttools.org/xquery-functions" at
@@ -11,8 +11,10 @@ import module namespace tt="http://www.ttools.org/xquery-functions" at
     "tt/_request.xqm";
 
 import module namespace a1="http://www.ttools.org/shax/ns/xquery-functions" at
+    "schemaLoader.xqm",
     "shax.xqm",
-    "xsd.xqm";
+    "xsd.xqm",
+    "xsd2shax.xqm";
 
 declare namespace m="http://www.ttools.org/shax/ns/xquery-functions";
 declare namespace z="http://www.ttools.org/shax/ns/structure";
@@ -79,6 +81,11 @@ declare variable $toolScheme :=
     <operation name="_nodlSample" type="node()" func="nodlSample" mod="tt/_pcollection.xqm" namespace="http://www.ttools.org/xquery-functions">
       <param name="model" type="xs:string?" fct_values="xml, sql, mongo" default="xml"/>
     </operation>
+    <operation name="loadXsds" type="node()" func="loadXsdsOp" mod="schemaLoader.xqm" namespace="http://www.ttools.org/shax/ns/xquery-functions">
+      <param name="xsd" type="docFOX*" sep="SC" pgroup="input"/>
+      <param name="xsdCat" type="docCAT*" sep="WS" pgroup="input"/>
+      <pgroup name="input" minOccurs="1"/>
+    </operation>
     <operation name="shacl" type="item()" func="shaclOp" mod="shax.xqm" namespace="http://www.ttools.org/shax/ns/xquery-functions">
       <param name="shax" type="docFOX" sep="SC" pgroup="input"/>
       <pgroup name="input" minOccurs="1"/>
@@ -87,7 +94,12 @@ declare variable $toolScheme :=
     <operation name="xsd" type="item()+" func="xsdOp" mod="xsd.xqm" namespace="http://www.ttools.org/shax/ns/xquery-functions">
       <param name="shax" type="docFOX+" sep="SC" fct_minDocCount="1" pgroup="input"/>
       <param name="odir" type="directory" fct_dirExists="true"/>
+      <param name="ofile" type="xs:string?"/>
+      <param name="osuffixes" type="xs:string*"/>
       <pgroup name="input" minOccurs="1"/>
+    </operation>
+    <operation name="xsd2shax" type="element()" func="xsd2shaxOp" mod="xsd2shax.xqm" namespace="http://www.ttools.org/shax/ns/xquery-functions">
+      <param name="xsd" type="docFOX+" sep="SC"/>
     </operation>
     <operation name="_help" func="_help" mod="tt/_help.xqm">
       <param name="default" type="xs:boolean" default="false"/>
@@ -237,6 +249,17 @@ declare function m:execOperation__nodlSample($request as element())
 };
      
 (:~
+ : Executes operation 'loadXsds'.
+ :
+ : @param request the request element
+ : @return the operation result
+ :)
+declare function m:execOperation_loadXsds($request as element())
+        as node() {
+    a1:loadXsdsOp($request)        
+};
+     
+(:~
  : Executes operation 'shacl'.
  :
  : @param request the request element
@@ -256,6 +279,17 @@ declare function m:execOperation_shacl($request as element())
 declare function m:execOperation_xsd($request as element())
         as item()+ {
     a1:xsdOp($request)        
+};
+     
+(:~
+ : Executes operation 'xsd2shax'.
+ :
+ : @param request the request element
+ : @return the operation result
+ :)
+declare function m:execOperation_xsd2shax($request as element())
+        as element() {
+    a1:xsd2shaxOp($request)        
 };
      
 (:~
@@ -293,8 +327,10 @@ declare function m:execOperation($req as element())
         else if ($opName eq '_copyNcat') then m:execOperation__copyNcat($req)
         else if ($opName eq '_deleteNcat') then m:execOperation__deleteNcat($req)
         else if ($opName eq '_nodlSample') then m:execOperation__nodlSample($req)
+        else if ($opName eq 'loadXsds') then m:execOperation_loadXsds($req)
         else if ($opName eq 'shacl') then m:execOperation_shacl($req)
         else if ($opName eq 'xsd') then m:execOperation_xsd($req)
+        else if ($opName eq 'xsd2shax') then m:execOperation_xsd2shax($req)
         else if ($opName eq '_help') then m:execOperation__help($req)
         else
         tt:createError('UNKNOWN_OPERATION', concat('No such operation: ', $opName), 
