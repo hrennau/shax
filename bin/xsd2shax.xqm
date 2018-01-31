@@ -280,6 +280,14 @@ declare function f:xsd2shax_typeContentItems($ctype as element(xs:complexType),
     f:xsd2shax_typeContentItemsRC($ctype, $nsmap, $schemas)
 };        
 
+(:~
+ : Recursive helper function of `xsd2shax_typeContentItems`.
+ :
+ : @param n the node to be processed
+ : @param nsmap a mapping of namespace URIs to prefixes
+ : @param schemas the schema elements to be considered
+ : @return SHAX object types
+ :)
 declare function f:xsd2shax_typeContentItemsRC($n as node(),
                                                $nsmap as element(zz:nsMap)?,
                                                $schemas as element(xs:schema)*)
@@ -331,23 +339,37 @@ declare function f:xsd2shax_typeContentItemsRC($n as node(),
         let $typeAtt := attribute type {$type} [exists($type)]
         let $card := f:cardinalityDescForXsdComp($n)
         let $cardAtt := attribute card {$card} [string($card)]
-        let $orderedAtt := attribute ordered {'true'} [$n/@shax:ordered eq 'true']        
+        let $orderedAtt := attribute ordered {'true'} [$n/@shax:ordered eq 'true']   
+        let $localStype := $n/xs:simpleType
+        let $localDatatype :=
+            $localStype/f:xsd2shax_dataType(., $nsmap, $schemas) 
         return
             element {$name} {
                 $cardAtt,
                 $typeAtt,
-                $orderedAtt
+                $orderedAtt,
+                $localDatatype/@*,
+                $localDatatype/node()
             }
             
     default return $n            
 };        
 
-declare function f:xsd2shax_dataTypes($nsmap as element(zz:nsMap)?, $schemas as element(xs:schema)+)
+(:~
+ : Returns the SHAX datatypes capturing the simple type definitions found in
+ : a set of schema documents.
+ :
+ : @param nsmap a mapping of namespace URIs to prefixes
+ : @param schemas the schema elements to be considered
+ : @return SHAX object types
+ :)
+declare function f:xsd2shax_dataTypes($nsmap as element(zz:nsMap)?, 
+                                      $schemas as element(xs:schema)+)
         as element(shax:dataType)* {
     let $stypes := $schemas/xs:simpleType
     let $dtypes :=
         for $stype in $stypes return
-            f:xsd2shax_dataType($stype, $nsmap)
+            f:xsd2shax_dataType($stype, $nsmap, $schemas)
     let $dtypes :=
         for $dt in $dtypes
         let $name := $dt/@name/tt:resolveNormalizedQName(., $nsmap)
@@ -357,25 +379,37 @@ declare function f:xsd2shax_dataTypes($nsmap as element(zz:nsMap)?, $schemas as 
         $dtypes        
 };        
 
-declare function f:xsd2shax_dataType($stype as element(xs:simpleType), $nsmap as element(zz:nsMap)?)
+(:~
+ : Returns the SHAX datatype capturing a simple type definition.
+ :
+ : @param stype a simple type definition (from XSD) 
+ : @param nsmap a mapping of namespace URIs to prefixes
+ : @param schemas the schema elements to be considered
+ : @return SHAX object types
+ :)
+declare function f:xsd2shax_dataType($stype as element(xs:simpleType), 
+                                     $nsmap as element(zz:nsMap)?,
+                                     $schemas as element(xs:schema)+)
+                                     
         as element(shax:dataType) {
-    let $name := $stype/i:getNormalizedComponentName(., $nsmap)        
+    let $name := $stype[@name]/i:getNormalizedComponentName(., $nsmap)        
     let $base := $stype/xs:restriction/@base
     let $memberTypes := $stype/xs:union/@memberTypes
     let $itemType := $stype/xs:list/@itemType
     
-    let $values := $stype/xs:restriction/xs:enumeration/@value
-    let $pattern := $stype/xs:restriction/xs:pattern/@value/replace(replace(., '^\^|\$$', ''), '(.+)', '^$1\$')
-    let $min := $stype/xs:restriction/xs:minInclusive/@value    
-    let $max := $stype/xs:restriction/xs:maxInclusive/@value    
-    let $minEx := $stype/xs:restriction/xs:minExclusive/@value    
-    let $maxEx := $stype/xs:restriction/xs:maxExclusive/@value    
-    let $minLen := $stype/xs:restriction/xs:minLength/@value    
-    let $maxLen := $stype/xs:restriction/xs:maxLength/@value    
-    
     let $content :=
         if ($base) then
             let $baseType := $base/resolve-QName(., ..) ! tt:normalizeQName(., $nsmap)
+            
+            let $values := $stype/xs:restriction/xs:enumeration/@value
+            let $pattern := $stype/xs:restriction/xs:pattern/@value
+                                  /replace(replace(., '^\^|\$$', ''), '(.+)', '^$1\$')
+            let $min := $stype/xs:restriction/xs:minInclusive/@value    
+            let $max := $stype/xs:restriction/xs:maxInclusive/@value    
+            let $minEx := $stype/xs:restriction/xs:minExclusive/@value    
+            let $maxEx := $stype/xs:restriction/xs:maxExclusive/@value    
+            let $minLen := $stype/xs:restriction/xs:minLength/@value    
+            let $maxLen := $stype/xs:restriction/xs:maxLength/@value    
             return (
                 $base/attribute base {$baseType},
                 if (not(exists($pattern))) then () else attribute pattern {$pattern}, 
@@ -385,12 +419,14 @@ declare function f:xsd2shax_dataType($stype as element(xs:simpleType), $nsmap as
                 $maxEx/attribute maxEx {.},            
                 $minLen/attribute minLen {.},
                 $maxLen/attribute maxLen {.},
-                for $value in $values return <shax:value>{$value/string()}</shax:value>
+                for $value in $values return 
+                    <shax:value>{$value/string()}</shax:value>
             )
         else if ($memberTypes) then (
             let $tnames := 
                 for $tname in $memberTypes/tokenize(normalize-space(.), ' ')
-                let $normTname := $tname/resolve-QName($tname, $memberTypes/..) ! tt:normalizeQName(., $nsmap)
+                let $normTname := $tname/resolve-QName($tname, $memberTypes/..) 
+                                  ! tt:normalizeQName(., $nsmap)
                 return $normTname
             return 
                 attribute memberTypes {string-join($tnames, ' ')}
@@ -406,7 +442,7 @@ declare function f:xsd2shax_dataType($stype as element(xs:simpleType), $nsmap as
         )
     return
         <shax:dataType>{
-            attribute name {$name},
+            if (empty($name)) then () else attribute name {$name},
             $content
         }</shax:dataType>
 };        
