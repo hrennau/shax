@@ -111,8 +111,8 @@ declare function f:xsd2shax_properties($nsmap as element(zz:nsMap)?, $schemas as
     let $elems := $schemas/xs:element
     let $properties :=
         for $elem in $elems
-        let $name := $elem/@name/resolve-QName(., ..) ! tt:normalizeQName(., $nsmap)
-        let $type := $elem/@type/resolve-QName(., ..) ! tt:normalizeQName(., $nsmap)
+        let $name := $elem/f:getComponentName(.) ! i:normalizeQNameNONS(., $nsmap)
+        let $type := $elem/@type/resolve-QName(., ..) ! i:normalizeQNameNONS(., $nsmap)
         order by local-name-from-QName($name), prefix-from-QName($name)        
         return
             <shax:property name="{$name}">{
