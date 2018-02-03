@@ -18,22 +18,32 @@ import module namespace tt="http://www.ttools.org/xquery-functions" at
 
 import module namespace i="http://www.ttools.org/shax/ns/xquery-functions" at
     "constants.xqm",
+    "shaclWriter-deprecated.xqm",
     "util.xqm";
     
 declare namespace z="http://www.ttools.org/shax/ns/structure";
 declare namespace shax="http://shax.org/ns/model";
+declare namespace stx="http://shax.org/ns/turtlexml";
 declare namespace xsd="http://www.w3.org/2001/XMLSchema";
+
+declare variable $f:NEW_TO_SHACL := true();
 
 (:~
  : Transforms an expanded SHAX document into a SHACL graph.
  :)
-declare function f:shaclFromShaxExpanded($shaxExpanded as element(shax:models))
+declare function f:shaclFromShaxExpanded($shaxExpanded as element(shax:models),
+                                         $deep as xs:boolean)
         as item() {
-    let $prefixes := f:shaclFromShaxExpanded_prefixes($shaxExpanded)
+    let $prefixes := f:shaclFromShaxExpanded_prefixes($shaxExpanded)    
+    let $shaclx := <stx:shacl>{f:shaclxFromShaxExpandedRC($shaxExpanded, 0, 3, $deep)}</stx:shacl>
+    let $DUMMY := file:write('SHACLX.xml', $shaclx)
     let $shapes := (
         f:shaclFromShaxExpanded_topElements($shaxExpanded),
-        f:shaclFromShaxExpandedRC($shaxExpanded, 0, 3),
-        f:shaclFromShaxExpanded_listType()[i:doesModelContainLists($shaxExpanded)]
+        if ($f:NEW_TO_SHACL) then 
+            f:serializeShaclx($shaclx)
+        else
+            f:shaclFromShaxExpandedRC($shaxExpanded, 0, 3, $deep),
+        f:shaclFromShaxExpanded_listType()[$shaclx//stx:node/@iri = 'shax:ListType']
     )
     return string-join(($prefixes, $shapes),'&#xA;')
 };
@@ -63,9 +73,9 @@ declare function f:shaclFromShaxExpanded_topElements($shaxExpanded as element())
         else ()
     where $typeConstraint
     return (
-            concat('e:_DocumentType', $pos),
-            concat('   a sh:NodeShape ;', ''),
-            concat('   sh:targetObjectsOf ', $property/@name, ' ;'),
+            concat('_e:_DocumentType', $pos),
+            concat('    a sh:NodeShape ;', ''),
+            concat('    sh:targetObjectsOf ', $property/@name, ' ;'),
             concat($typeConstraint, ' .'),
             ''
         ) 
@@ -85,7 +95,7 @@ string-join((
 "@prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix shax: <http://shax.org/ns/model#> .
 @prefix nons: <http://shax.org/ns/nonamespace#> .
-@prefix e: <http://shax.org/ns/model/elementequivalent#> .
+@prefix _e: <http://shax.org/ns/model/element-equivalent#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix xs:  <http://www.w3.org/2001/XMLSchema#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
@@ -131,239 +141,394 @@ shax:ListType
 };
 
 (:~ 
- : Recursive helper function of `shaclFromShaxExpanded`.
+ : Recursive helper function of `shaclxFromShaxExpanded`.
  :
  : @param n a node of the expanded SHAX model
  : @param level the current level of indentation
  : @param indent the number of blanks per level of indentation
  : @return a SHACL representation of the input node
  :)
-declare function f:shaclFromShaxExpandedRC($n as node(),
-                                           $level as xs:integer,
-                                           $indent as xs:integer)
-        as item()* {
-    let $prefix0 := string-join(
-        for $i in 1 to $indent return ' ', '')
-        
-    let $prefix := string-join(
-        for $i in 1 to $level * $indent return ' ', '')
-    let $prefix2 := $prefix || $prefix0
-    let $prefix3 := $prefix2 || $prefix0
-    let $prefix4 := $prefix3 || $prefix0    
-    let $lines :=
+declare function f:shaclxFromShaxExpandedRC($n as node(),
+                                            $level as xs:integer,
+                                            $indent as xs:integer,
+                                            $deep as xs:boolean)
+        as node()* {
+    let $nss := $n/self::*/i:copyNamespaces(.) return
     
     typeswitch($n)
     case comment() return 
-        for $line in tokenize($n, '&#xA;') return concat($prefix, '#', $line)
-    
+        <stx:comment>{
+            for $line in tokenize($n, '&#xA;') return 
+                <stx:commentLine>{$line}</stx:commentLine>
+        }</stx:comment>
+        
     case element(shax:models) return 
-        for $c in $n/shax:model return f:shaclFromShaxExpandedRC($c, $level, $indent)
+        for $c in $n/shax:model return 
+            f:shaclxFromShaxExpandedRC($c, $level, $indent, $deep)
     
     case element(shax:model) return 
-        for $c in $n/node() return f:shaclFromShaxExpandedRC($c, $level, $indent)
+        for $c in $n/node() return 
+            f:shaclxFromShaxExpandedRC($c, $level, $indent, $deep)
     
     case element(shax:pshape) return
-        let $prefixNext :=
-            if ($n/@ordered) then $prefix4 else $prefix2
+        let $path := $n/@path/<stx:path iri="{.}">{$nss}</stx:path>
         let $contentItems := (
-            $n/@path/concat($prefix2, 'sh:path ', .),   
-            
-            if ($n/@ordered) then (
-                concat($prefix2, 'sh:node shax:ListType '),
-                concat($prefix2, 'sh:property ['),  
-                concat($prefix3, 'sh:path ([sh:zeroOrMorePath rdf:rest] rdf:first)')            
-            ) else (),
-            
-            $n/@minCount[not(. eq '0')]/concat($prefixNext, 'sh:minCount ', .),             
-            $n/@maxCount[not(. eq '-1')]/concat($prefixNext, 'sh:maxCount ', .),             
-            $n/@datatype/concat($prefixNext, 'sh:datatype ', .),
-            $n/@class/concat($prefixNext, 'sh:class ', .),                
-            $n/@nodeKind/concat($prefixNext, 'sh:nodeKind ', f:shaclNodeKind(.), ' '),
-            $n/@node/concat($prefixNext, 'sh:node ', .),             
-            $n/@minInclusive/concat($prefixNext, 'sh:minInclusive ', .),
-            $n/@maxInclusive/concat($prefixNext, 'sh:maxInclusive ', .),             
-            $n/@minExclusive/concat($prefixNext, 'sh:minExclusive ', .),
-            $n/@maxExclusive/concat($prefixNext, 'sh:maxExclusive ', .),             
-            $n/@minLength/concat($prefixNext, 'sh:minLength ', .),             
-            $n/@maxLength/concat($prefixNext, 'sh:maxLength ', .),             
-            $n/@pattern/concat($prefixNext, 'sh:pattern "', replace(., '\\', '\\\\'), '"'),             
-            $n/@flags/concat($prefixNext, 'sh:flags "', ., '"'),   
-            
-            if (not($n/@ordered)) then () else
-            concat($prefix2, ']'),
-            
-            for $c in $n/node() return f:shaclFromShaxExpandedRC($c, $level + 1, $indent)             
-        )
-        let $content := for $item in $contentItems return concat($item, ' ;')
-        
-        let $content := (
-            for $item at $pos in $contentItems 
-            return
-                concat($item, ' ', 
-                    if (ends-with($item, '[')) then ' '
-                    else if (ends-with($item, ']')) then ' '
-                    else ';')
-            )
+            $n/@minCount[not(. eq '0')]/<stx:minCount number="{.}" />,             
+            $n/@maxCount[not(. eq '-1')]/<stx:maxCount number="{.}"/>,             
 
-        return
+            $n/@class/<stx:class iri="{.}">{$nss}</stx:class>,                
+            $n/@node/<stx:node iri="{.}">{$nss}</stx:node>,
+            $n/@nodeKind/<stx:nodeKind iri="{.}">{$nss}</stx:nodeKind>,
+            
+            f:shaclxFromShaxExpanded_facets($n),            
+            for $c in $n/node() return 
+                f:shaclxFromShaxExpandedRC($c, $level + 1, $indent, $deep)             
+        )
+        let $contentItems :=
+            if (not($n/@ordered)) then $contentItems
+            else (
+                <stx:node iri="shax:ListType">{$nss}</stx:node>,
+                <stx:property>
+                    <stx:bnode>{
+                        <stx:path string="([sh:zeroOrMorePath rdf:rest] rdf:first)"/>,
+                        $contentItems
+                    }</stx:bnode>
+                </stx:property>
+            )     
+        let $content := ($path, $contentItems)    
+        return (
             if ($n/parent::shax:shape) then (
-                concat($prefix, 'sh:property ['),
-                $content,
-                concat($prefix, ']')
+                <stx:property>
+                    <stx:bnode>{
+                        $content
+                    }</stx:bnode>
+                </stx:property>
             ) else (
-                concat($prefix, '['),
-                $content,
-                concat($prefix, ']')
+                <stx:bnode>{
+                    $content
+                }</stx:bnode>
             )
+        )
+            
+            
     case element(shax:shape) return
         let $name := $n/@name/string()
-        let $datatype := $n/@datatype/string()
-        let $datatypeQName := $n/@datatype/resolve-QName(., ..)
-        let $datatypeLName := local-name-from-QName($datatypeQName)
-        let $datatypeNS := namespace-uri-from-QName($datatypeQName)
-        let $isXsdType := $datatypeNS eq $f:URI_XSD
-        let $extends := $n/@extends/concat($prefix2, 'sh:node ', .)      
-        let $values := 
-            let $raw := $n/shax:value/string()
-            return
-                if (empty($raw)) then ()
-                else if ($isXsdType and $datatypeLName = ('integer')) then $raw
-                else if ($isXsdType and $datatypeLName eq 'string') then $raw ! concat('"', ., '"')
-                else $raw ! concat('"', ., '"^^', $datatype)
-
+        let $extends := $n/@extends/<stx:node>{string(.)}</stx:node>
         let $contentItems    :=
         
           (: case: a union type :)
             if ($n/@memberTypes) then
                 let $mtypes := $n/@memberTypes/tokenize(normalize-space(.), ' ')
                 return (
-                    concat($prefix2, 'a sh:NodeShape'), 
-                    string-join((
-                        concat($prefix2, 'sh:or ('),
-                        for $mtype in $mtypes return
-                            concat($prefix3, $mtype),
-                        concat($prefix2, ')')),
-                        '&#xA;')
+                    <stx:type iri="sh:NodeShape">{$nss}</stx:type>,
+                    <stx:or>{
+                        $nss,
+                        <stx:list>{
+                            $mtypes ! <stx:memberType iri="{.}">{$nss}</stx:memberType>
+                        }</stx:list>
+                    }</stx:or>
                 )
+                
             (: case: a list type :)
-            else if ($n/@container eq 'list' or $n/@itemDatatype or $n/@itemNode) then (              
-                    concat($prefix2, 'a sh:NodeShape'),
-                    concat($prefix2, 'sh:node shax:ListType'),
-                    concat($prefix2, 'sh:property ['),                
-                    concat($prefix3, 'sh:path ([sh:zeroOrMorePath rdf:rest] rdf:first) '),
+            else if ($n/@container eq 'list' or $n/@itemDatatype or $n/@itemNode) then (   
+                <stx:type iri="sh:NodeShape">{$nss}</stx:type>,
+                <stx:node iri="shax:ListType">{$nss}</stx:node>,
+                <stx:property>{
+                    $nss,
+                    <stx:bnode>{
+                        <stx:path string="([sh:zeroOrMorePath rdf:rest] rdf:first)"/>,
+                        $n/@minSize/<stx:minCount number="{.}"/>,
+                        $n/@maxSize/<stx:maxCount number="{.}"/>,
+                        if ($n/@itemDataType) then
+                            $n/@itemDatatype/<stx:dataType iri="{.}">{$nss}</stx:dataType>
+                        else if ($n/@itemNode) then
+                            $n/@itemNode/<stx:node iri="{.}">{$nss}</stx:node>
+                        else if ($n/@class) then (
+                            $n/@class/<stx:class iri="{.}">{$nss}</stx:class>,
+                            $extends
+                        ) else f:shaclxFromShaxExpanded_facets($n),
+      
+                        for $c in $n/(node() except shax:value) return 
+                            f:shaclxFromShaxExpandedRC($c, $level + 2, $indent, $deep)
+                    }</stx:bnode>
+                }</stx:property>
                     
-                    (: list length constraints :)
-                    $n/@minSize/concat($prefix3, 'sh:minCount ', .),
-                    $n/@maxSize/concat($prefix3, 'sh:maxCount ', .),
-                    
-                    if ($n/@itemDataType) then $n/@itemDatatype/concat($prefix3, 'sh:datatype ', .)
-                    else if ($n/@itemNode) then $n/@itemNode/concat($prefix3, 'sh:node ', .)
-                    else if ($n/@class) then (
-                        $n/@class/concat($prefix3, 'sh:class ', .),  
-                        $extends
-                    ) else (
-                        $n/@datatype/concat($prefix3, 'sh:datatype ', .),                   
-                        (: facets :)
-                        $n/@minInclusive/concat($prefix3, 'sh:minInclusive ', .),
-                        $n/@maxInclusive/concat($prefix3, 'sh:maxInclusive ', .),             
-                        $n/@minExclusive/concat($prefix3, 'sh:minExclusive ', .),
-                        $n/@maxExclusive/concat($prefix3, 'sh:maxExclusive ', .),             
-                        $n/@minLength/concat($prefix3, 'sh:minLength ', .),             
-                        $n/@maxLength/concat($prefix3, 'sh:maxLength ', .),     
-                        $n/@pattern/concat($prefix3, 'sh:pattern "', replace(., '\\', '\\\\'), '"'),             
-                        $n/@flags/concat($prefix3, 'sh:flags "', ., '"'),
-                        if (empty($values)) then () else concat($prefix3, 'sh:in (', string-join($values, ' '), ')') 
-                    ),        
-                    for $c in $n/(node() except $values) return 
-                        f:shaclFromShaxExpandedRC($c, $level + 2, $indent),
-                    
-                    concat($prefix2, ']')
             
             (: not a list type :)
             ) else (
-                concat($prefix2, 'a sh:NodeShape'),
-                $n/@targetClass/concat($prefix2, 'sh:targetClass ', .),             
-                $n/@class/concat($prefix2, 'sh:class ', .),                
-                $n/@datatype/concat($prefix2, 'sh:datatype ', .),
-                $n/@node/concat($prefix2, 'sh:node ', .),                
+                <stx:type iri="sh:NodeShape"/>,
+                $n/@targetClass/<stx:targetClass iri="{.}">{$nss}</stx:targetClass>,             
+                $n/@class/<stx:class iri="{.}">{$nss}</stx:class>,                
+                $n/@node/<stx:node iri="{.}">{$nss}</stx:node>,                
                 $extends,
-                $n/@minInclusive/concat($prefix2, 'sh:minInclusive ', .),
-                $n/@maxInclusive/concat($prefix2, 'sh:maxInclusive ', .),             
-                $n/@minExclusive/concat($prefix2, 'sh:minExclusive ', .),
-                $n/@maxExclusive/concat($prefix2, 'sh:maxExclusive ', .),             
-                $n/@minLength/concat($prefix2, 'sh:minLength ', .),             
-                $n/@maxLength/concat($prefix2, 'sh:maxLength ', .),             
-                $n/@pattern/concat($prefix2, 'sh:pattern "', replace(., '\\', '\\\\'), '"'),             
-                $n/@flags/concat($prefix2, 'sh:flags "', ., '"'),
-                if (empty($values)) then () else concat($prefix2, 'sh:in (', string-join($values, ' '), ')'),
-
+                f:shaclxFromShaxExpanded_facets($n),
                 for $c in $n/(node() except shax:value) return 
-                    f:shaclFromShaxExpandedRC($c, $level + 1, $indent)
+                    f:shaclxFromShaxExpandedRC($c, $level + 1, $indent, $deep)
             )
 
         let $contentItemsCount := count($contentItems)
-        let $content := (
-            for $item at $pos in $contentItems 
-            return
-                concat($item, ' ', 
-                    if (ends-with($item, '[')) then ' '
-                    else if (not($name)) then ';'
-                    else if ($pos eq $contentItemsCount) then '.'
-                    else ';')
-            )
         return (
-            if ($name) then (
-                concat($prefix, $name),
-                $content,
-                if (matches($content[last()], '[.;]$')) then '' else ()
-            ) else (
-                concat($prefix, '['),
-                $content,
-                concat($prefix, ']')
-            )
+            if ($name) then <stx:shape name="{$name}">{$nss, $contentItems}</stx:shape>
+            else <stx:bnode>{$nss, $contentItems}</stx:bnode>
         )
         
     case element(shax:xone) return 
         let $contentItems := for $c in $n/node() return 
-            f:shaclFromShaxExpandedRC($c, $level + 1, $indent)
-        let $content := string-join($contentItems, '&#xA;')
-        return (
-            concat($prefix, 'sh:xone ('),
-            $content,
-            concat($prefix, ')')
-        )        
+            f:shaclxFromShaxExpandedRC($c, $level + 1, $indent, $deep)
+        return
+            <stx:xone>{
+                $nss,
+                <stx:list>{
+                    $contentItems
+                }</stx:list>
+            }</stx:xone>
         
     case element(shax:or) return 
         let $contentItems := for $c in $n/node() return 
-            f:shaclFromShaxExpandedRC($c, $level + 1, $indent)
-        let $content := string-join($contentItems, '&#xA;')
-        return (
-            concat($prefix, 'sh:or ('),
-            $content,
-            concat($prefix, ')')
-        )        
+            f:shaclxFromShaxExpandedRC($c, $level + 1, $indent, $deep)
+        return
+            <stx:or>{
+                $nss,
+                <stx:list>{
+                    $contentItems
+                }</stx:list>
+            }</stx:or>
 
     case element(shax:and) return 
         let $contentItems := for $c in $n/node() return 
-            f:shaclFromShaxExpandedRC($c, $level + 1, $indent)
-        let $content := string-join($contentItems, '&#xA;')
-        return (
-            concat($prefix, 'sh:and ('),
-            $content,
-            concat($prefix, ')')
-        )        
+            f:shaclxFromShaxExpandedRC($c, $level + 1, $indent, $deep)
+        return
+            <stx:and>{
+                $nss,
+                <stx:list>{
+                    $contentItems
+                }</stx:list>
+            }</stx:and>
 
     case element(shax:not) return 
         let $contentItems := for $c in $n/node() return 
-            f:shaclFromShaxExpandedRC($c, $level + 1, $indent)
+            f:shaclxFromShaxExpandedRC($c, $level + 1, $indent, $deep)
         let $content := string-join($contentItems, '&#xA;')
-        return (
-            concat($prefix, 'sh:not'),
-            $content
-        )        
+        return 
+            <stx:not>{
+                $nss,
+                $contentItems
+            }</stx:not>
+            
     case element(shax:property) return ()
     
-    default return string($n)[normalize-space($n)]
+    case element(shax:import) return ()
     
-    return string-join($lines, '&#xA;')[exists($lines)]
+    default return <stx:UNKNOWN>{$n}</stx:UNKNOWN>
+};
+
+(:~
+ : Transforms an element of expanded SHAX into shaclx elements
+ : representing facets.
+ :
+ : @param elem elemenet from expanded SHAX
+ : @return shclx representations of facets
+ :)
+declare function f:shaclxFromShaxExpanded_facets($elem as element())
+        as element()* {
+    let $nss := i:copyNamespaces($elem)        
+    let $values :=
+        let $items := $elem/shax:value/string()
+        return
+            if (empty($items)) then () 
+            else            
+                let $datatypeQName := $elem/@datatype/resolve-QName(., ..)
+                for $item in $items
+                return
+                    <stx:value>{
+                        i:copyNamespaces($elem),
+                        if ($datatypeQName eq $i:QNAME_XSDTYPE_STRING) then attribute string {$item}
+                        else if ($datatypeQName eq $i:QNAME_XSDTYPE_INTEGER) then attribute number {$item}                        
+                        else (attribute literal {$item}, attribute type {$datatypeQName})
+                    }</stx:value>
+    return (
+    
+        $elem/@datatype/<stx:datatype iri="{.}">{$nss}</stx:datatype>,            
+        $elem/@minInclusive/<stx:minInclusive number="{.}"/>,
+        $elem/@maxInclusive/<stx:maxInclusive number="{.}"/>,             
+        $elem/@minExclusive/<stx:minExclusive number="{.}"/>,
+        $elem/@maxExclusive/<stx:maxExclusive number="{.}"/>,             
+        $elem/@minLength/<stx:minLength number="{.}">{$nss}</stx:minLength>,             
+        $elem/@maxLength/<stx:maxLength number="{.}">{$nss}</stx:maxLength>,             
+        $elem/@pattern/<stx:pattern string="{.}"/>,             
+        $elem/@flags/<stx:flags string="{.}"/>,  
+        $values 
+    )            
+};   
+
+declare function f:serializeShaclx($shacl as element(stx:shacl))
+        as xs:string {
+    f:serializeShaclxRC($shacl, 0, 3)        
+};
+
+declare function f:serializeShaclxRC($n as node(),
+                                     $level as xs:integer,
+                                     $indent as xs:integer)
+        as xs:string? {
+    let $prefix := string-join(for $i in 1 to $level * $indent return ' ', '')   
+    let $prefixStep := string-join(for $i in 1 to $indent return ' ', '')
+    let $lines :=
+    
+        typeswitch($n)
+    
+        case element(stx:shacl) return
+            for $c in $n/node() return f:serializeShaclxRC($c, $level, $indent)
+        
+        case element(stx:comment) return 
+            for $line in $n/stx:commentLine return concat('#', $line)
+
+        case element(stx:shape) return (
+            let $headLine := concat($prefix, $n/@name)        
+            let $contentItems := (                            
+                for $c in $n/(node() except stx:value) return 
+                    f:serializeShaclxRC($c, $level + 1, $indent),
+                    
+                let $values := $n/stx:value
+                return
+                    if (not($values)) then () else
+
+                    concat($prefix, $prefixStep, 'sh:in (', 
+                        string-join(
+                            for $value in $n/stx:value
+                            return
+                                if ($value/@string) then concat('"', $value/@string, '"')
+                                else if ($value/@number) then string($value)
+                                else if ($value/@type/resolve-QName(., ..) eq $i:QNAME_XSDTYPE_BOOLEAN) then string($value)
+                                else $value/concat('"', $value/@literal, '"', '^^', @type)
+                            , ' '),
+                        ')')
+
+            )                
+            let $content := string-join($contentItems, ';&#xA;')
+            return (
+                $headLine, 
+                $content || '.'
+            )
+        )
+        case element(stx:path) return
+            if ($n/@iri) then concat($prefix, 'sh:path ', $n/@iri)
+            else if ($n/@string) then concat($prefix, 'sh:path ', $n/@string) 
+            else error()
+            
+        case element(stx:minCount) return
+            concat($prefix, 'sh:minCount ', $n/@number)
+            
+        case element(stx:maxCount) return
+            concat($prefix, 'sh:maxCount ', $n/@number)
+            
+        case element(stx:minInclusive) return
+            concat($prefix, 'sh:minInclusive ', $n/@number)
+            
+        case element(stx:maxInclusive) return
+            concat($prefix, 'sh:maxInclusive ', $n/@number)
+            
+        case element(stx:minExclusive) return
+            concat($prefix, 'sh:minInclusive ', $n/@number)
+            
+        case element(stx:maxExclusive) return
+            concat($prefix, 'sh:maxInclusive ', $n/@number)
+            
+        case element(stx:minLength) return
+            concat($prefix, 'sh:minLength ', $n/@number)
+            
+        case element(stx:maxLength) return
+            concat($prefix, 'sh:maxLength ', $n/@number)
+            
+        case element(stx:pattern) return
+            concat($prefix, 'sh:pattern "', $n/@string, '"')
+            
+        case element(stx:flags) return
+            concat($prefix, 'sh:flags "', $n/@string, '"')
+            
+        case element(stx:node) return
+            concat($prefix, 'sh:node ', $n/@iri)
+            
+        case element(stx:datatype) return
+            concat($prefix, 'sh:datatype ', $n/@iri)
+            
+        case element(stx:memberType) return
+            concat($prefix, $n/@iri)
+            
+        case element(stx:type) return
+            concat($prefix, 'a ', $n/@iri)
+            
+        case element(stx:targetClass) return
+            concat($prefix, 'sh:targetClass ', $n/@iri)
+            
+        case element(stx:class) return
+            concat($prefix, 'sh:class ', $n/@iri)
+            
+        case element(stx:nodeKind) return
+            concat($prefix, 'sh:nodeKind ', $n/@iri)
+            
+        case element(stx:property) return
+            if ($n/stx:bnode) then
+                let $bnodeContentItems :=
+                    for $c in $n/stx:bnode/* return
+                        f:serializeShaclxRC($c, $level + 1, $indent) || ';'
+                let $myLines := (
+                    concat($prefix, 'sh:property ['),
+                    $bnodeContentItems,
+                    concat($prefix, ']')
+                )
+                return
+                    string-join($myLines, '&#xA;')
+            else
+                concat($prefix, 'sh:property ', $n/@iri)
+            
+        case element(stx:bnode) return
+            let $content := 
+                string-join(
+                    for $c in $n/node() return 
+                        f:serializeShaclxRC($c, $level + 1, $indent) || ' ;'
+                    , '&#xA;')
+            return 
+                concat($prefix, '[&#xA;', $content, '&#xA;', $prefix, ']')
+                
+        case element(stx:list) return
+            let $content := 
+                string-join(
+                    for $c in $n/node() return 
+                        f:serializeShaclxRC($c, $level + 1, $indent)
+                    , '&#xA;')                        
+            return 
+                concat($prefix, '(&#xA;', $content, '&#xA;', $prefix, ')')
+                
+        case element(stx:xone) return (
+            concat($prefix, 'sh:xone ('),
+            string-join(
+                $n/stx:list/*/f:serializeShaclxRC(., $level + 1, $indent)
+                , '&#xA;'),
+            concat($prefix, ')')
+        )
+
+        case element(stx:or) return (
+            concat($prefix, 'sh:or ('),
+            string-join(
+                $n/stx:list/*/f:serializeShaclxRC(., $level + 1, $indent)
+                , '&#xA;'),
+            concat($prefix, ')')
+        )
+
+        case element(stx:not) return
+            if ($n/stx:bnode) then (
+                concat($prefix, 'sh:not ['),
+                string-join(
+                    for $c in $n/stx:bnode/* return f:serializeShaclxRC($c, $level + 1, $indent) || ';'
+                    , '&#xA;'),
+                concat($prefix, ']')
+            ) else (
+                concat($prefix, 'sh:not'),
+                for $c in $n/node() return f:serializeShaclxRC(., $level + 1, $indent)
+            )
+
+        default return concat($prefix, 'UNKNOWN ELEM: ', name($n))
+        
+    return
+        string-join($lines, '&#xA;')[string()]    
 };

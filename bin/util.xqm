@@ -39,7 +39,8 @@ declare function f:copyNamespaces($elem as element())
 
 declare function f:doesModelContainLists($shaxExpanded as element()+)
         as xs:boolean {
-    exists($shaxExpanded//shax:shape/(@itemDatatype, @itemNode, @container[. eq 'list']))        
+    exists($shaxExpanded//shax:shape/(@itemDatatype, @itemNode, @container[. eq 'list'])) or
+    exists($shaxExpanded//shax:pshape/@ordered[. eq 'true'])
 };
 
 (:~

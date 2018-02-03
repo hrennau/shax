@@ -1,7 +1,7 @@
 (:
  : shax - 
  :
- : @version 2018-01-28T16:02:31.862+01:00 
+ : @version 2018-02-03T18:29:25.421+01:00 
  :)
 
 import module namespace tt="http://www.ttools.org/xquery-functions" at
@@ -90,15 +90,16 @@ declare variable $toolScheme :=
       <param name="shax" type="docFOX" sep="SC" pgroup="input"/>
       <pgroup name="input" minOccurs="1"/>
       <param name="format" type="xs:string?" default="ttl" fct_values="xml, ttl"/>
+      <param name="deep" type="xs:boolean?" default="false"/>
     </operation>
-    <operation name="xsd" type="item()+" func="xsdOp" mod="xsd.xqm" namespace="http://www.ttools.org/shax/ns/xquery-functions">
+    <operation name="xsd" type="item()*" func="xsdOp" mod="xsd.xqm" namespace="http://www.ttools.org/shax/ns/xquery-functions">
       <param name="shax" type="docFOX+" sep="SC" fct_minDocCount="1" pgroup="input"/>
-      <param name="odir" type="directory" fct_dirExists="true"/>
-      <param name="ofile" type="xs:string?"/>
+      <param name="odir" type="directory?" fct_dirExists="true"/>
+      <param name="ofile" type="xs:string?" default="#stdout"/>
       <param name="osuffixes" type="xs:string*"/>
       <pgroup name="input" minOccurs="1"/>
     </operation>
-    <operation name="xsd2shax" type="element()" func="xsd2shaxOp" mod="xsd2shax.xqm" namespace="http://www.ttools.org/shax/ns/xquery-functions">
+    <operation name="shax" type="element()" func="xsd2shaxOp" mod="xsd2shax.xqm" namespace="http://www.ttools.org/shax/ns/xquery-functions">
       <param name="xsd" type="docFOX+" sep="SC"/>
     </operation>
     <operation name="_help" func="_help" mod="tt/_help.xqm">
@@ -277,17 +278,17 @@ declare function m:execOperation_shacl($request as element())
  : @return the operation result
  :)
 declare function m:execOperation_xsd($request as element())
-        as item()+ {
+        as item()* {
     a1:xsdOp($request)        
 };
      
 (:~
- : Executes operation 'xsd2shax'.
+ : Executes operation 'shax'.
  :
  : @param request the request element
  : @return the operation result
  :)
-declare function m:execOperation_xsd2shax($request as element())
+declare function m:execOperation_shax($request as element())
         as element() {
     a1:xsd2shaxOp($request)        
 };
@@ -330,7 +331,7 @@ declare function m:execOperation($req as element())
         else if ($opName eq 'loadXsds') then m:execOperation_loadXsds($req)
         else if ($opName eq 'shacl') then m:execOperation_shacl($req)
         else if ($opName eq 'xsd') then m:execOperation_xsd($req)
-        else if ($opName eq 'xsd2shax') then m:execOperation_xsd2shax($req)
+        else if ($opName eq 'shax') then m:execOperation_shax($req)
         else if ($opName eq '_help') then m:execOperation__help($req)
         else
         tt:createError('UNKNOWN_OPERATION', concat('No such operation: ', $opName), 

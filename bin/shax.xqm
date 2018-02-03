@@ -12,6 +12,7 @@
          <param name="shax" type="docFOX" sep="SC" pgroup="input"/>        
          <pgroup name="input" minOccurs="1"/>   
          <param name="format" type="xs:string?" default="ttl" fct_values="xml, ttl"/>
+         <param name="deep" type="xs:boolean?" default="false"/>
       </operation>
     </operations>  
 :)  
@@ -46,7 +47,8 @@ declare function f:shaclOp($request as element())
         as item() {
     let $models := tt:getParams($request, 'shax')/*   
     let $format := tt:getParams($request, 'format')
-    let $shacl := f:shacl($models, $format)
+    let $deep := tt:getParams($request, 'deep')    
+    let $shacl := f:shacl($models, $format, $deep)
     return
         $shacl
 };   
@@ -62,12 +64,14 @@ declare function f:shaclOp($request as element())
  : @return a SHACL model or an expanded shax document, depending
  :    on parameter $format
  :)
-declare function f:shacl($models as element()+, $format as xs:string)
+declare function f:shacl($models as element()+, 
+                         $format as xs:string,
+                         $deep as xs:boolean)
         as item() {
     let $modelsExpanded := f:expandShax($models)
     return
         if ($format eq 'xml') then $modelsExpanded
-        else f:shaclFromShaxExpanded($modelsExpanded)
+        else f:shaclFromShaxExpanded($modelsExpanded, $deep)
 };        
 
 (:~
@@ -459,11 +463,13 @@ declare function f:expandShax4RC($n as node())
                     $propUse
                     /ancestor::shax:models/shax:model
                     /shax:property[resolve-QName(@name, .) eq node-name($n)]
+
             let $propDecl := ($propRef, $propUse)[1]
+            
+            let $kindAtt := $propDecl/@kind/attribute nodeKind {i:shaclNodeKind(.)}
             let $path := ($propRef/@name/resolve-QName(., ..), node-name($propUse))[1]
             let $baseAtt := $propDecl/@base/attribute base {.}            
             let $typeAtt := $propDecl/@type/attribute type {.}            
-            let $kindAtt := $propDecl/@kind/attribute nodeKind {.}
             let $classAtt := $propDecl/@class/attribute class {.}     
             let $orderedAtt := $propDecl/@ordered/attribute ordered {.}
             let $facetAtts := f:getShaclFacets_atts($propDecl)            

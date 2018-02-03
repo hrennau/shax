@@ -8,10 +8,10 @@
  
 (:~@operations
    <operations>
-      <operation name="xsd" type="item()+" func="xsdOp">     
+      <operation name="xsd" type="item()*" func="xsdOp">     
          <param name="shax" type="docFOX+" sep="SC" fct_minDocCount="1" pgroup="input"/>        
-         <param name="odir" type="directory" fct_dirExists="true"/>
-         <param name="ofile" type="xs:string?"/>
+         <param name="odir" type="directory?" fct_dirExists="true"/>
+         <param name="ofile" type="xs:string?" default="#stdout"/>
          <param name="osuffixes" type="xs:string*"/>
          <pgroup name="input" minOccurs="1"/>   
       </operation>
@@ -48,27 +48,38 @@ declare namespace xs="http://www.w3.org/2001/XMLSchema";
  : @return the RDF triples of a SHACL shape
  :) 
 declare function f:xsdOp($request as element())
-        as item()+ {
+        as item()* {
     let $shax := tt:getParams($request, 'shax')/*   
     let $odir := tt:getParams($request, 'odir')
     let $ofile :=
         let $explicit := tt:getParams($request, 'ofile')
         return
-            if ($explicit) then $explicit else
-                $shax[1]/root()/replace(replace(document-uri(.), '\.[^.]+$', ''), '^.+/', '')
+            if ($explicit) then $explicit else ()
+                (: $shax[1]/root()/replace(replace(document-uri(.), '\.[^.]+$', ''), '^.+/', '') :)
     let $osuffixes := tt:getParams($request, 'osuffixes')
     let $xsds := f:shax2xsd($shax)
-    return (
-        f:writeXsds($xsds, $odir, $ofile, $osuffixes),
-        $xsds
-    )
+    return
+        f:writeXsds($xsds, $odir, $ofile, $osuffixes)
 };   
 
 declare function f:writeXsds($xsds as element(xs:schema)+,
-                             $odir as xs:string,
-                             $ofile as xs:string, 
+                             $odir as xs:string?,
+                             $ofile as xs:string?, 
                              $osuffixes as xs:string*)
-        as empty-sequence() {
+        as element()? {
+    if (not($odir)) then
+        if (count($xsds) gt 1) then
+            tt:createError('MISSING_INPUT_PARAM', 
+                concat(
+                    'As the SHAX model uses multiple namespaces (', count($xsds),
+                    '), multiple XSDs (', count($xsds), ') must be written (one ',
+                    'per target namespace) - please specify an output folder, ',
+                    'using parameter $odir.'),
+                ())
+        else if ($ofile eq '#stdout') then $xsds
+        else file:write($ofile, $xsds)
+    else
+    
     let $ofileBase := replace($ofile, '\.xsd$', '')
     let $odir := replace($odir, '([^/])$', '$1/')
     return

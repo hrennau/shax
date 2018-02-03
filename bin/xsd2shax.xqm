@@ -8,7 +8,7 @@
  
 (:~@operations
    <operations>
-      <operation name="xsd2shax" type="element()" func="xsd2shaxOp">     
+      <operation name="shax" type="element()" func="xsd2shaxOp">     
          <param name="xsd" type="docFOX+" sep="SC"/>        
       </operation>
     </operations>  
