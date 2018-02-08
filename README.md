@@ -3,6 +3,6 @@ A SHAX processor, transforming SHAX models into SHACL, XSD and JSON Schema. It c
 
 A command-line tool written in XQuery and based on the TopicTools framework ( https://github.com/hrennau/topictools ).
 
-Work in progress - documentation will be added before February 08, 2018 (xmlprague 2018).
+Documention is under construction. For the time being, please consult doc/shax-quickstart.pdf for getting started.
 
 Use of this tool currently requires the use of the BaseX XQuery processor ( http://basex.org ).
