@@ -97,6 +97,7 @@ string-join((
 @prefix nons: <http://shax.org/ns/nonamespace#> .
 @prefix _e: <http://shax.org/ns/model/element-equivalent#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace#> .
 @prefix xs:  <http://www.w3.org/2001/XMLSchema#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
@@ -213,7 +214,7 @@ declare function f:shaclxFromShaxExpandedRC($n as node(),
             
     case element(shax:shape) return
         let $name := $n/@name/string()
-        let $extends := $n/@extends/<stx:node>{string(.)}</stx:node>
+        let $extends := $n/@extends/<stx:node iri="{string(.)}"/>
         let $contentItems    :=
         
           (: case: a union type :)

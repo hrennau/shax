@@ -75,10 +75,10 @@ declare function f:shacl($models as element()+,
 };        
 
 (:~
- : Transformas shax documents into the expanded shax format.
+ : Transformas SHAX documents into the expanded SHAX format.
  :
- : @param models one or more shax documents
- : @return an expanded shax document
+ : @param models one or more SHAX documents
+ : @return an expanded SHAX document
  :)
 declare function f:expandShax($models as element()+)
         as element() {
@@ -98,7 +98,8 @@ declare function f:expandShax($models as element()+)
    
     (: *** objectType => shape 
            pgroup     => shape
-           choice     => xone :)   
+           choice     => xone 
+           annotation => () :)   
     let $trans4 := f:expandShax3RC($trans3)
     
     (: *** property => pshape :)
@@ -127,12 +128,12 @@ declare function f:expandShax($models as element()+)
 
 (:~
  : Reports the substitution groups implied by a set of
- : shax documents. The result is a map representing each 
+ : SHAX documents. The result is a map representing each 
  : substitution group by an entry: the key is the qualified 
  : name of the group head, and the value is a sequence of 
  : the qualified names of all group members.
  :
- : @param shax a shax document
+ : @param SHAX a shax document
  : @return a map describing all substitution groups
  :)
 declare function f:sgroupsFromShax($models as element(shax:models))
@@ -273,6 +274,8 @@ declare function f:expandShax2RC($n as node(), $sgroups as map(xs:QName, xs:QNam
 declare function f:expandShax3RC($n as node())
         as node()* {
     typeswitch($n)
+    
+    case element(shax:annotation) return ()
     
     (: shax:objectType => shax:shape :)
     case element(shax:objectType) return

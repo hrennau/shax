@@ -1,14 +1,14 @@
 (:
  : -------------------------------------------------------------------------
  :
- : shax.xqm - Document me!
+ : xsd2shax.xqm - functions for transforming XSD into SHAX.
  :
  : -------------------------------------------------------------------------
  :)
  
 (:~@operations
    <operations>
-      <operation name="shax" type="element()" func="xsd2shaxOp">     
+      <operation name="xsd2shax" type="element()" func="xsd2shaxOp">     
          <param name="xsd" type="docFOX+" sep="SC"/>        
       </operation>
     </operations>  
@@ -36,6 +36,7 @@ import module namespace i="http://www.ttools.org/shax/ns/xquery-functions" at
 declare namespace z="http://www.ttools.org/shax/ns/structure";
 declare namespace zz="http://www.ttools.org/structure";
 declare namespace shax="http://shax.org/ns/model";
+declare namespace shaxerr="http://shax.org/ns/error";
 declare namespace nons="http://shax.org/ns/nonamespace";
 declare namespace xsd="http://www.w3.org/2001/XMLSchema";
 
@@ -61,15 +62,12 @@ declare function f:xsd2shaxOp($request as element())
  : @return a SHAX model capturing the model specified by the XSD documents
  :) 
 declare function f:xsd2shax($nsmap as element(zz:nsMap)?, $schemas as element(xs:schema)+)
-        as element(shax:model) {
+        as element() {
         
     (: check if schemas meet constraints of current implementation :)
-    if (1 eq 2) then
-        let $features := 'xs:group'
-        return
-            error(QName($i:URI_ERROR, 'NOT_YET_IMPLEMENTED'), concat('Not yet implemented: ', 
-                string-join($features, ' ')))
-    else
+    let $check := f:xsd2shax_check($nsmap, $schemas)
+    return
+        if ($check) then $check else
     
     (: normalize schemas :)
     let $schemas01 := $schemas
@@ -100,6 +98,30 @@ declare function f:xsd2shax($nsmap as element(zz:nsMap)?, $schemas as element(xs
 };        
 
 (:~
+ : Checks if the XSDs are compatible with current limitations of the implementation.
+ :
+ : @param request the operation request
+ : @return a SHAX model capturing the model specified by the XSD documents
+ :) 
+declare function f:xsd2shax_check($nsmap as element(zz:nsMap)?, $schemas as element(xs:schema)+)
+        as element(shaxerr:error)? {
+        
+    (: check if schemas meet constraints of current implementation :)
+    let $violations :=    
+        if ($schemas/xs:group) then
+            <shaxerr:feature name="xsd2shax_group">
+                <shaxerr:detail name="countGroups" value="{count($schemas/xs:group)}"/>
+            </shaxerr:feature>
+        else ()
+    return
+        if (empty($violations)) then ()
+        else
+            <shaxerr:error type="NOT_YET_IMPLEMENTED">{
+                $violations
+            }</shaxerr:error>
+};
+
+(:~
  : Returns the SHAX properties capturing the top-level element declarations.
  :
  : @param nsmap a mapping of namespace URIs to prefixes
@@ -113,10 +135,12 @@ declare function f:xsd2shax_properties($nsmap as element(zz:nsMap)?, $schemas as
         for $elem in $elems
         let $name := $elem/f:getComponentName(.) ! i:normalizeQNameNONS(., $nsmap)
         let $type := $elem/@type/resolve-QName(., ..) ! i:normalizeQNameNONS(., $nsmap)
+        let $sgroup := $elem/@substitutionGroup/resolve-QName(., ..) ! i:normalizeQNameNONS(., $nsmap)
         order by local-name-from-QName($name), prefix-from-QName($name)        
         return
             <shax:property name="{$name}">{
-                if (not(exists($type))) then () else attribute type {$type}            
+                if (not(exists($type))) then () else attribute type {$type},            
+                if (not(exists($sgroup))) then () else attribute substitutes {$sgroup}                
             }</shax:property>
     return
         $properties
@@ -293,6 +317,9 @@ declare function f:xsd2shax_typeContentItemsRC($n as node(),
                                                $schemas as element(xs:schema)*)
         as node()* {
     typeswitch($n)
+    case element(xs:annotation) return
+        <shax:annotation source="xsd">{$n}</shax:annotation>
+        
     case element(xs:complexType) | 
          element(xs:simpleContent) | 
          element(xs:complexContent) |
