@@ -283,6 +283,33 @@ declare function f:editComponent($comp as element(), $skipAnno as xs:boolean?, $
             }
 };        
 
+(: ###################################################################################################################
+   #                                                                                                                 #
+   #   section:    f i n d    c o m p o n e n t                                                                      #
+   #                                                                                                                 #   
+   ###################################################################################################################
+:)   
+
+(:~
+ : Finds an attribute group with a given QName.
+ :
+ : @param qname a qualified name
+ : @param nsmap a map of namespace bindings
+ : @param schemas the currently considered schema elements
+ : @return the xs:attributeGroup element defining the attribute group
+ :)
+declare function f:findAttributeGroup($qname as xs:QName, 
+                                      $nsmap as element(zz:nsMap)?,
+                                      $schemas as element(xs:schema)+)                        
+        as element(xs:attributeGroup)? {   
+    let $lname := local-name-from-QName($qname)
+    let $ns := namespace-uri-from-QName($qname)
+    let $comp :=
+        $schemas[not($ns) and not(@targetNamespace) or $ns eq @targetNamespace]
+        /xs:attributeGroup[@name eq $lname]
+    return $comp
+};
+
  (:
  : ============================================================================
  :

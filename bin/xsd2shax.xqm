@@ -356,6 +356,11 @@ declare function f:xsd2shax_typeContentItemsRC($n as node(),
                 f:xsd2shax_typeContentItemsRC($c, $nsmap, $schemas) 
         }</shax:choice>
         
+    case element(xs:attributeGroup) return
+        let $def := f:findAttributeGroup($n/@ref/resolve-QName(., ..), $nsmap, $schemas)
+        return
+            $def/*/f:xsd2shax_typeContentItemsRC(., $nsmap, $schemas)
+            
     case element(xs:element) | element(xs:attribute) return
         (: @TO.DO - rethink how to treat namespace-less components;
                     always put them into nons namespace?;
