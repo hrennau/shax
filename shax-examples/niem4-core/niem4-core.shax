@@ -1576,6 +1576,30 @@
   <shax:property name="s:YearDate" type="t:gYear" substitutes="s:DateRepresentation"/>
   <shax:property name="s:YearMonthDate" type="t:gYearMonth" substitutes="s:DateRepresentation"/>
   <shax:property name="s:ZuluDateTime" type="s:ZuluDateTimeType" substitutes="s:DateRepresentation"/>
+  <shax:property name="xml:base" type="xs:anyURI"/>
+  <shax:property name="a:codeListColumnName" type="xs:string"/>
+  <shax:property name="a:codeListConstrainingIndicator" type="xs:boolean"/>
+  <shax:property name="a:codeListURI" type="xs:anyURI"/>
+  <shax:property name="s:confidencePercent" type="xs:decimal"/>
+  <shax:property name="s:fiscalYearStartDate" type="xs:date"/>
+  <shax:property name="u:id" type="xs:ID"/>
+  <shax:property name="xml:id" type="xs:ID"/>
+  <shax:property name="xml:lang"/>
+  <shax:property name="u:metadata" type="xs:IDREFS"/>
+  <shax:property name="s:partialIndicator" type="xs:boolean"/>
+  <shax:property name="s:personNameCommentText" type="xs:string"/>
+  <shax:property name="s:personNameInitialIndicator" type="xs:boolean"/>
+  <shax:property name="s:quantityUnitText" type="xs:string"/>
+  <shax:property name="u:ref" type="xs:IDREF"/>
+  <shax:property name="u:relationshipMetadata" type="xs:IDREFS"/>
+  <shax:property name="s:sequenceID" type="xs:integer"/>
+  <shax:property name="s:sigmaErrorValue" type="xs:decimal"/>
+  <shax:property name="s:softwareVersionText" type="xs:string"/>
+  <shax:property name="xml:space"/>
+  <shax:property name="s:toleranceNumeric" type="xs:decimal"/>
+  <shax:property name="s:truncationIndicator" type="xs:boolean"/>
+  <shax:property name="u:uri" type="xs:anyURI"/>
+  <shax:property name="s:yearFirstMonthDate" type="xs:gMonth"/>
   <!--*** data types ***-->
   <shax:dataType name="s:AddressCategoryCodeSimpleType" base="xs:token">
     <shax:value>business</shax:value>

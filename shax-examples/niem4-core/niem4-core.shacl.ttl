@@ -6261,6 +6261,116 @@ _e:_RootResource___s___ZuluDateTime
     sh:targetObjectsOf s:ZuluDateTime ;
     sh:node s:ZuluDateTimeType .
 
+_e:_RootResource___xml___base
+    a sh:NodeShape ;
+    sh:targetObjectsOf xml:base ;
+    sh:datatype xsd:anyURI .
+
+_e:_RootResource___a___codeListColumnName
+    a sh:NodeShape ;
+    sh:targetObjectsOf a:codeListColumnName ;
+    sh:datatype xsd:string .
+
+_e:_RootResource___a___codeListConstrainingIndicator
+    a sh:NodeShape ;
+    sh:targetObjectsOf a:codeListConstrainingIndicator ;
+    sh:datatype xsd:boolean .
+
+_e:_RootResource___a___codeListURI
+    a sh:NodeShape ;
+    sh:targetObjectsOf a:codeListURI ;
+    sh:datatype xsd:anyURI .
+
+_e:_RootResource___s___confidencePercent
+    a sh:NodeShape ;
+    sh:targetObjectsOf s:confidencePercent ;
+    sh:datatype xsd:decimal .
+
+_e:_RootResource___s___fiscalYearStartDate
+    a sh:NodeShape ;
+    sh:targetObjectsOf s:fiscalYearStartDate ;
+    sh:datatype xsd:date .
+
+_e:_RootResource___u___id
+    a sh:NodeShape ;
+    sh:targetObjectsOf u:id ;
+    sh:datatype xsd:ID .
+
+_e:_RootResource___xml___id
+    a sh:NodeShape ;
+    sh:targetObjectsOf xml:id ;
+    sh:datatype xsd:ID .
+
+_e:_RootResource___u___metadata
+    a sh:NodeShape ;
+    sh:targetObjectsOf u:metadata ;
+    sh:datatype xsd:IDREFS .
+
+_e:_RootResource___s___partialIndicator
+    a sh:NodeShape ;
+    sh:targetObjectsOf s:partialIndicator ;
+    sh:datatype xsd:boolean .
+
+_e:_RootResource___s___personNameCommentText
+    a sh:NodeShape ;
+    sh:targetObjectsOf s:personNameCommentText ;
+    sh:datatype xsd:string .
+
+_e:_RootResource___s___personNameInitialIndicator
+    a sh:NodeShape ;
+    sh:targetObjectsOf s:personNameInitialIndicator ;
+    sh:datatype xsd:boolean .
+
+_e:_RootResource___s___quantityUnitText
+    a sh:NodeShape ;
+    sh:targetObjectsOf s:quantityUnitText ;
+    sh:datatype xsd:string .
+
+_e:_RootResource___u___ref
+    a sh:NodeShape ;
+    sh:targetObjectsOf u:ref ;
+    sh:datatype xsd:IDREF .
+
+_e:_RootResource___u___relationshipMetadata
+    a sh:NodeShape ;
+    sh:targetObjectsOf u:relationshipMetadata ;
+    sh:datatype xsd:IDREFS .
+
+_e:_RootResource___s___sequenceID
+    a sh:NodeShape ;
+    sh:targetObjectsOf s:sequenceID ;
+    sh:datatype xsd:integer .
+
+_e:_RootResource___s___sigmaErrorValue
+    a sh:NodeShape ;
+    sh:targetObjectsOf s:sigmaErrorValue ;
+    sh:datatype xsd:decimal .
+
+_e:_RootResource___s___softwareVersionText
+    a sh:NodeShape ;
+    sh:targetObjectsOf s:softwareVersionText ;
+    sh:datatype xsd:string .
+
+_e:_RootResource___s___toleranceNumeric
+    a sh:NodeShape ;
+    sh:targetObjectsOf s:toleranceNumeric ;
+    sh:datatype xsd:decimal .
+
+_e:_RootResource___s___truncationIndicator
+    a sh:NodeShape ;
+    sh:targetObjectsOf s:truncationIndicator ;
+    sh:datatype xsd:boolean .
+
+_e:_RootResource___u___uri
+    a sh:NodeShape ;
+    sh:targetObjectsOf u:uri ;
+    sh:datatype xsd:anyURI .
+
+_e:_RootResource___s___yearFirstMonthDate
+    a sh:NodeShape ;
+    sh:targetObjectsOf s:yearFirstMonthDate ;
+    sh:datatype xsd:gMonth .
+
 #*** properties ***
 #*** data types ***
 s:AddressCategoryCodeSimpleType
@@ -6785,26 +6895,31 @@ s:AddressCategoryCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:AddressGridType
    a sh:NodeShape;
@@ -7034,26 +7149,31 @@ s:AngularMinuteType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:AngularRateMeasureType
    a sh:NodeShape;
@@ -7083,26 +7203,31 @@ s:AngularSecondType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:AnomalyType
    a sh:NodeShape;
@@ -7234,26 +7359,31 @@ u:AssociationType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path xs:anyAttribute;
@@ -7267,21 +7397,25 @@ u:AugmentationType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path xs:anyAttribute;
@@ -7335,26 +7469,31 @@ s:BinaryHashFunctionCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:BinaryHashType
    a sh:NodeShape;
@@ -7465,26 +7604,31 @@ s:BooleanListType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 b:CanadianProvinceCodeType
    a sh:NodeShape;
@@ -7504,26 +7648,31 @@ b:CanadianProvinceCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:CapabilityType
    a sh:NodeShape;
@@ -7670,39 +7819,47 @@ s:CodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path a:codeListColumnName;
       sh:maxCount 1;
+      sh:datatype xs:string;
    ];
    sh:property [
       sh:path a:codeListConstrainingIndicator;
       sh:maxCount 1;
+      sh:datatype xs:boolean;
    ];
    sh:property [
       sh:path a:codeListURI;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ].
 s:CommentType
    a sh:NodeShape;
@@ -7790,26 +7947,31 @@ s:ContactInformationAvailabilityCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:ContactInformationType
    a sh:NodeShape;
@@ -7909,26 +8071,31 @@ c:ConveyanceCategoryCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:ConveyanceType
    a sh:NodeShape;
@@ -7978,26 +8145,31 @@ k:CountryAlpha2CodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 k:CountryAlpha3CodeType
    a sh:NodeShape;
@@ -8017,26 +8189,31 @@ k:CountryAlpha3CodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 k:CountryNumericCodeType
    a sh:NodeShape;
@@ -8056,26 +8233,31 @@ k:CountryNumericCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 k:CountrySubdivisionCodeType
    a sh:NodeShape;
@@ -8095,26 +8277,31 @@ k:CountrySubdivisionCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:CountryType
    a sh:NodeShape;
@@ -8218,26 +8405,31 @@ l:CurrencyCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 e:DEAClassScheduleCodeCodeType
    a sh:NodeShape;
@@ -8257,26 +8449,31 @@ e:DEAClassScheduleCodeCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:DateRangeType
    a sh:NodeShape;
@@ -8370,26 +8567,31 @@ s:DayOfWeekCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:DecalType
    a sh:NodeShape;
@@ -8439,26 +8641,31 @@ s:DecimalListType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:DecimalRangeType
    a sh:NodeShape;
@@ -8493,30 +8700,36 @@ s:Degree180PlusMinusType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path s:sigmaErrorValue;
       sh:maxCount 1;
+      sh:datatype xs:decimal;
    ].
 s:Degree360Type
    a sh:NodeShape;
@@ -8536,30 +8749,36 @@ s:Degree360Type
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path s:sigmaErrorValue;
       sh:maxCount 1;
+      sh:datatype xs:decimal;
    ].
 s:Degree90PlusMinusType
    a sh:NodeShape;
@@ -8579,30 +8798,36 @@ s:Degree90PlusMinusType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path s:sigmaErrorValue;
       sh:maxCount 1;
+      sh:datatype xs:decimal;
    ].
 s:Degree90Type
    a sh:NodeShape;
@@ -8622,26 +8847,31 @@ s:Degree90Type
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:DepartureType
    a sh:NodeShape;
@@ -8816,26 +9046,31 @@ s:DirectionCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 n:DirectionDatumCodeType
    a sh:NodeShape;
@@ -8855,26 +9090,31 @@ n:DirectionDatumCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:DisciplinaryActionType
    a sh:NodeShape;
@@ -8994,26 +9234,31 @@ f:DocumentIntelligenceCategoryCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:DocumentStatusDetailsType
    a sh:NodeShape;
@@ -9348,26 +9593,31 @@ s:DoubleListType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:DoubleRangeType
    a sh:NodeShape;
@@ -9402,26 +9652,31 @@ e:DrugCategoryCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 e:DrugCodeType
    a sh:NodeShape;
@@ -9441,26 +9696,31 @@ e:DrugCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:DrugType
    a sh:NodeShape;
@@ -9537,26 +9797,31 @@ c:ElectronicEquipmentCategoryCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 c:ElectronicInstrumentCategoryCodeType
    a sh:NodeShape;
@@ -9576,26 +9841,31 @@ c:ElectronicInstrumentCategoryCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:EncounterClassificationType
    a sh:NodeShape;
@@ -9861,26 +10131,31 @@ o:FacilityUsageCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 o:FacilityUsageLevel1CodeType
    a sh:NodeShape;
@@ -9900,26 +10175,31 @@ o:FacilityUsageLevel1CodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 o:FacilityUsageLevel2CodeType
    a sh:NodeShape;
@@ -9939,26 +10219,31 @@ o:FacilityUsageLevel2CodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:FinancialAccountHolderCodeType
    a sh:NodeShape;
@@ -9978,26 +10263,31 @@ s:FinancialAccountHolderCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:FinancialAccountHolderType
    a sh:NodeShape;
@@ -10028,26 +10318,31 @@ s:FinancialAccountNumberCategoryCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:FinancialAccountType
    a sh:NodeShape;
@@ -10087,6 +10382,7 @@ s:FiscalYearDateType
    sh:property [
       sh:path s:fiscalYearStartDate;
       sh:maxCount 1;
+      sh:datatype xs:date;
    ].
 s:FullTelephoneNumberType
    a sh:NodeShape;
@@ -10140,26 +10436,31 @@ h:HazmatUNCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:HighwayType
    a sh:NodeShape;
@@ -10275,26 +10576,31 @@ s:ImagePoseCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:ImageType
    a sh:NodeShape;
@@ -10490,26 +10796,31 @@ s:IntegerListType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:IntegerRangeType
    a sh:NodeShape;
@@ -11006,26 +11317,31 @@ m:LanguageCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:LatitudeCoordinateType
    a sh:NodeShape;
@@ -11064,26 +11380,31 @@ s:LatitudeDegreeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 p:LengthCodeType
    a sh:NodeShape;
@@ -11103,26 +11424,31 @@ p:LengthCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:LengthMeasureType
    a sh:NodeShape;
@@ -11475,26 +11801,31 @@ s:LongitudeDegreeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 c:MachineryCategoryCodeType
    a sh:NodeShape;
@@ -11514,26 +11845,31 @@ c:MachineryCategoryCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:ManifestType
    a sh:NodeShape;
@@ -11618,26 +11954,31 @@ p:MassCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:MeasureType
    a sh:NodeShape;
@@ -11757,26 +12098,31 @@ s:MessageCategoryFATCACodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:MessageType
    a sh:NodeShape;
@@ -11987,16 +12333,19 @@ u:MetadataType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path xs:anyAttribute;
@@ -12021,26 +12370,31 @@ s:MilitaryDischargeCategoryCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:MilitarySummaryType
    a sh:NodeShape;
@@ -12168,26 +12522,31 @@ s:NonNegativeDecimalType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:NonNegativeIntegerListType
    a sh:NodeShape;
@@ -12207,26 +12566,31 @@ s:NonNegativeIntegerListType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:NumericType
    a sh:NodeShape;
@@ -12235,10 +12599,12 @@ s:NumericType
    sh:property [
       sh:path s:confidencePercent;
       sh:maxCount 1;
+      sh:datatype xs:decimal;
    ];
    sh:property [
       sh:path s:toleranceNumeric;
       sh:maxCount 1;
+      sh:datatype xs:decimal;
    ].
 u:ObjectType
    a sh:NodeShape;
@@ -12250,26 +12616,31 @@ u:ObjectType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path xs:anyAttribute;
@@ -12412,26 +12783,31 @@ g:OccupationCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:OffenseLevelCodeType
    a sh:NodeShape;
@@ -12451,26 +12827,31 @@ s:OffenseLevelCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:OrganizationAssociationType
    a sh:NodeShape;
@@ -12702,26 +13083,31 @@ s:PassportCategoryCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:PassportType
    a sh:NodeShape;
@@ -12817,26 +13203,31 @@ s:PaymentMethodCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:PaymentType
    a sh:NodeShape;
@@ -13156,26 +13547,31 @@ s:PersonNameCategoryCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:PersonNameTextType
    a sh:NodeShape;
@@ -13189,10 +13585,12 @@ s:PersonNameTextType
    sh:property [
       sh:path s:personNameInitialIndicator;
       sh:maxCount 1;
+      sh:datatype xs:boolean;
    ];
    sh:property [
       sh:path s:sequenceID;
       sh:maxCount 1;
+      sh:datatype xs:integer;
    ].
 s:PersonNameType
    a sh:NodeShape;
@@ -13259,6 +13657,7 @@ s:PersonNameType
    sh:property [
       sh:path s:personNameCommentText;
       sh:maxCount 1;
+      sh:datatype xs:string;
    ].
 s:PersonOrganizationAssociationType
    a sh:NodeShape;
@@ -13752,26 +14151,31 @@ s:PersonUnionCategoryCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:PersonUnionSeparationType
    a sh:NodeShape;
@@ -13813,26 +14217,31 @@ s:PersonUnionStatusCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:PersonWorkerAssociationType
    a sh:NodeShape;
@@ -13901,26 +14310,31 @@ s:PleaCategoryCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:PolygonRegionType
    a sh:NodeShape;
@@ -13951,26 +14365,31 @@ s:PositiveIntegerListType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:PreviousActivityAssociationType
    a sh:NodeShape;
@@ -14155,6 +14574,7 @@ s:QuantityType
    sh:property [
       sh:path s:quantityUnitText;
       sh:maxCount 1;
+      sh:datatype xs:string;
    ].
 s:QuarterIDType
    a sh:NodeShape;
@@ -14174,30 +14594,36 @@ s:QuarterIDType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path s:yearFirstMonthDate;
       sh:maxCount 1;
+      sh:datatype xs:gMonth;
    ].
 s:RealEstateType
    a sh:NodeShape;
@@ -14324,26 +14750,31 @@ s:RelativeLocationHeadingType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:RelativeLocationType
    a sh:NodeShape;
@@ -14432,26 +14863,31 @@ j:ReligionCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:RequestType
    a sh:NodeShape;
@@ -14618,26 +15054,31 @@ s:SeparationCategoryCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:SiteType
    a sh:NodeShape;
@@ -14678,6 +15119,7 @@ s:SoftwareNameType
    sh:property [
       sh:path s:softwareVersionText;
       sh:maxCount 1;
+      sh:datatype xs:string;
    ].
 s:SpeedMeasureType
    a sh:NodeShape;
@@ -14779,26 +15221,31 @@ s:StatuteCategoryCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:StreetType
    a sh:NodeShape;
@@ -14853,26 +15300,31 @@ s:StringListType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:SubstanceMeasureType
    a sh:NodeShape;
@@ -14943,26 +15395,31 @@ s:SupervisionLevelCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:SupervisionRestrictionCodeType
    a sh:NodeShape;
@@ -14982,26 +15439,31 @@ s:SupervisionRestrictionCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:SupervisionType
    a sh:NodeShape;
@@ -15150,26 +15612,31 @@ r:TelephoneCategoryCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:TelephoneNumberType
    a sh:NodeShape;
@@ -15244,26 +15711,31 @@ p:TemperatureUnitCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:TextType
    a sh:NodeShape;
@@ -15272,10 +15744,12 @@ s:TextType
    sh:property [
       sh:path s:partialIndicator;
       sh:maxCount 1;
+      sh:datatype xs:boolean;
    ];
    sh:property [
       sh:path s:truncationIndicator;
       sh:maxCount 1;
+      sh:datatype xs:boolean;
    ];
    sh:property [
       sh:path xml:lang;
@@ -15299,26 +15773,31 @@ p:TimeCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:TimeMeasureType
    a sh:NodeShape;
@@ -15367,26 +15846,31 @@ s:TokenListType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:TransportationAssociationType
    a sh:NodeShape;
@@ -15452,26 +15936,31 @@ d:USCountyCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 q:USStateCodeType
    a sh:NodeShape;
@@ -15491,26 +15980,31 @@ q:USStateCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 i:USStateNumericCodeType
    a sh:NodeShape;
@@ -15530,26 +16024,31 @@ i:USStateNumericCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:UTMCoordinateType
    a sh:NodeShape;
@@ -15569,26 +16068,31 @@ s:UTMCoordinateType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:UnsignedIntegerRangeType
    a sh:NodeShape;
@@ -15699,26 +16203,31 @@ p:VelocityCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:VelocityMeasureType
    a sh:NodeShape;
@@ -15749,26 +16258,31 @@ n:VerticalDatumCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:VesselType
    a sh:NodeShape;
@@ -15844,26 +16358,31 @@ p:VolumeUnitCodeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 s:WeaponType
    a sh:NodeShape;
@@ -15920,26 +16439,31 @@ s:ZuluDateTimeType
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 t:anyURI
    a sh:NodeShape;
@@ -15958,26 +16482,31 @@ t:anyURI
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 t:base64Binary
    a sh:NodeShape;
@@ -15996,26 +16525,31 @@ t:base64Binary
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 t:boolean
    a sh:NodeShape;
@@ -16034,26 +16568,31 @@ t:boolean
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 t:byte
    a sh:NodeShape;
@@ -16072,26 +16611,31 @@ t:byte
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 t:date
    a sh:NodeShape;
@@ -16110,26 +16654,31 @@ t:date
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 t:dateTime
    a sh:NodeShape;
@@ -16148,26 +16697,31 @@ t:dateTime
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 t:decimal
    a sh:NodeShape;
@@ -16186,26 +16740,31 @@ t:decimal
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 t:double
    a sh:NodeShape;
@@ -16224,26 +16783,31 @@ t:double
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 t:duration
    a sh:NodeShape;
@@ -16262,26 +16826,31 @@ t:duration
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 t:float
    a sh:NodeShape;
@@ -16300,26 +16869,31 @@ t:float
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 t:gDay
    a sh:NodeShape;
@@ -16338,26 +16912,31 @@ t:gDay
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 t:gMonth
    a sh:NodeShape;
@@ -16376,26 +16955,31 @@ t:gMonth
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 t:gMonthDay
    a sh:NodeShape;
@@ -16414,26 +16998,31 @@ t:gMonthDay
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 t:gYear
    a sh:NodeShape;
@@ -16452,26 +17041,31 @@ t:gYear
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 t:gYearMonth
    a sh:NodeShape;
@@ -16490,26 +17084,31 @@ t:gYearMonth
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 t:hexBinary
    a sh:NodeShape;
@@ -16528,26 +17127,31 @@ t:hexBinary
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 t:int
    a sh:NodeShape;
@@ -16566,26 +17170,31 @@ t:int
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 t:integer
    a sh:NodeShape;
@@ -16604,26 +17213,31 @@ t:integer
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 t:language
    a sh:NodeShape;
@@ -16642,26 +17256,31 @@ t:language
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 t:long
    a sh:NodeShape;
@@ -16680,26 +17299,31 @@ t:long
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 t:negativeInteger
    a sh:NodeShape;
@@ -16718,26 +17342,31 @@ t:negativeInteger
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 t:nonNegativeInteger
    a sh:NodeShape;
@@ -16756,26 +17385,31 @@ t:nonNegativeInteger
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 t:nonPositiveInteger
    a sh:NodeShape;
@@ -16794,26 +17428,31 @@ t:nonPositiveInteger
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 t:normalizedString
    a sh:NodeShape;
@@ -16832,26 +17471,31 @@ t:normalizedString
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 t:positiveInteger
    a sh:NodeShape;
@@ -16870,26 +17514,31 @@ t:positiveInteger
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 t:short
    a sh:NodeShape;
@@ -16908,26 +17557,31 @@ t:short
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 t:string
    a sh:NodeShape;
@@ -16946,26 +17600,31 @@ t:string
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 t:time
    a sh:NodeShape;
@@ -16984,26 +17643,31 @@ t:time
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 t:token
    a sh:NodeShape;
@@ -17022,26 +17686,31 @@ t:token
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 t:unsignedByte
    a sh:NodeShape;
@@ -17060,26 +17729,31 @@ t:unsignedByte
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 t:unsignedInt
    a sh:NodeShape;
@@ -17098,26 +17772,31 @@ t:unsignedInt
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 t:unsignedLong
    a sh:NodeShape;
@@ -17136,26 +17815,31 @@ t:unsignedLong
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 t:unsignedShort
    a sh:NodeShape;
@@ -17174,26 +17858,31 @@ t:unsignedShort
       sh:path u:id;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:ID;
    ];
    sh:property [
       sh:path u:ref;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREF;
    ];
    sh:property [
       sh:path u:uri;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:anyURI;
    ];
    sh:property [
       sh:path u:metadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ];
    sh:property [
       sh:path u:relationshipMetadata;
       sh:minCount 1;
       sh:maxCount 1;
+      sh:datatype xs:IDREFS;
    ].
 
 shax:ListType
