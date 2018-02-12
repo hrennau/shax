@@ -1,7 +1,7 @@
 (:
  : shax - 
  :
- : @version 2018-02-11T21:18:33.654+01:00 
+ : @version 2018-02-12T00:13:55.94+01:00 
  :)
 
 import module namespace tt="http://www.ttools.org/xquery-functions" at
@@ -101,6 +101,7 @@ declare variable $toolScheme :=
     </operation>
     <operation name="xsd2shax" type="element()" func="xsd2shaxOp" mod="xsd2shax.xqm" namespace="http://www.ttools.org/shax/ns/xquery-functions">
       <param name="xsd" type="docFOX+" sep="SC"/>
+      <param name="ignoreAnno" type="xs:boolean?" default="false"/>
     </operation>
     <operation name="_help" func="_help" mod="tt/_help.xqm">
       <param name="default" type="xs:boolean" default="false"/>

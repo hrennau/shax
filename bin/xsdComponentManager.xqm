@@ -235,11 +235,17 @@ declare function f:getDocumentName($comp as element())
  :)
 declare function f:cardinalityDescForXsdComp($comp as element())
         as xs:string {
-    let $minOccurs := ($comp/@minOccurs/xs:integer(.), 1)[1]        
-    let $maxOccurs := ($comp/@maxOccurs/
-        (if (. eq 'unbounded') then -1 else xs:integer(.)), 1)[1]    
-    return
-        f:cardinalityDescFromCardinalityRange($minOccurs, $maxOccurs)      
+    if ($comp/self::xs:attribute) then
+        let $minOccurs := if ($comp/@use eq 'optional') then 0 else 1
+        let $maxOccurs := 1
+        return
+            f:cardinalityDescFromCardinalityRange($minOccurs, $maxOccurs)
+    else            
+        let $minOccurs := ($comp/@minOccurs/xs:integer(.), 1)[1]        
+        let $maxOccurs := ($comp/@maxOccurs/
+            (if (. eq 'unbounded') then -1 else xs:integer(.)), 1)[1]    
+        return
+            f:cardinalityDescFromCardinalityRange($minOccurs, $maxOccurs)      
 };        
 
 (: ###################################################################################################################

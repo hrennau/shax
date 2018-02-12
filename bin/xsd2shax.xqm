@@ -9,7 +9,8 @@
 (:~@operations
    <operations>
       <operation name="xsd2shax" type="element()" func="xsd2shaxOp">     
-         <param name="xsd" type="docFOX+" sep="SC"/>        
+         <param name="xsd" type="docFOX+" sep="SC"/>    
+         <param name="ignoreAnno" type="xs:boolean?" default="false"/>
       </operation>
     </operations>  
 :)  
@@ -50,18 +51,26 @@ declare namespace xsd="http://www.w3.org/2001/XMLSchema";
 declare function f:xsd2shaxOp($request as element())
         as item() {
     let $schemas := i:getSchemas($request) 
+    let $ignoreAnno := tt:getParam($request, 'ignoreAnno')
     let $nsmap := i:getTnsPrefixMap($schemas)
+    
+    let $options := trace(
+        <options ignoreAnno="{$ignoreAnno}"/> , 'OPTIONS: ')
+        
     return
-        f:xsd2shax($nsmap, $schemas)
+        f:xsd2shax($options, $nsmap, $schemas)
 };   
 
 (:~
  : Transforms XSD documents into a SHAX model.
  :
+ : @param options options controlling the processing
  : @param request the operation request
  : @return a SHAX model capturing the model specified by the XSD documents
  :) 
-declare function f:xsd2shax($nsmap as element(zz:nsMap)?, $schemas as element(xs:schema)+)
+declare function f:xsd2shax($options as element(options)?,
+                            $nsmap as element(zz:nsMap)?, 
+                            $schemas as element(xs:schema)+)
         as element() {
         
     (: check if schemas meet constraints of current implementation :)
@@ -69,14 +78,16 @@ declare function f:xsd2shax($nsmap as element(zz:nsMap)?, $schemas as element(xs
     return
         if ($check) then $check else
     
-    (: normalize schemas :)
+    (: normalize schemas 
+            to be considered - probably namespace normalization necessary  
+            in order to exclude inconsistent prefix bindings :)
     let $schemas01 := $schemas
 
     (: properties :)
     let $properties := f:xsd2shax_properties($nsmap, $schemas)
 
     (: object types :)
-    let $otypes := f:xsd2shax_objectTypes($nsmap, $schemas)
+    let $otypes := f:xsd2shax_objectTypes($options, $nsmap, $schemas)
 
     (: data types :)
     let $dtypes := f:xsd2shax_dataTypes($nsmap, $schemas)
@@ -122,7 +133,8 @@ declare function f:xsd2shax_check($nsmap as element(zz:nsMap)?, $schemas as elem
 };
 
 (:~
- : Returns the SHAX properties capturing the top-level element declarations.
+ : Returns the SHAX properties capturing the top-level element and
+ : attribute declarations.
  :
  : @param nsmap a mapping of namespace URIs to prefixes
  : @param schemas the schema elements to be considered
@@ -131,11 +143,12 @@ declare function f:xsd2shax_check($nsmap as element(zz:nsMap)?, $schemas as elem
 declare function f:xsd2shax_properties($nsmap as element(zz:nsMap)?, $schemas as element(xs:schema)+)
         as element(shax:property)* {
     let $elems := $schemas/xs:element
+    let $atts := $schemas/xs:attribute    
     let $properties :=
-        for $elem in $elems
-        let $name := $elem/f:getComponentName(.) ! i:normalizeQNameNONS(., $nsmap)
-        let $type := $elem/@type/resolve-QName(., ..) ! i:normalizeQNameNONS(., $nsmap)
-        let $sgroup := $elem/@substitutionGroup/resolve-QName(., ..) ! i:normalizeQNameNONS(., $nsmap)
+        for $item in ($atts, $elems)
+        let $name := $item/f:getComponentName(.) ! i:normalizeQNameNONS(., $nsmap)
+        let $type := $item/@type/resolve-QName(., ..) ! i:normalizeQNameNONS(., $nsmap)
+        let $sgroup := $item/self::xs:element/@substitutionGroup/resolve-QName(., ..) ! i:normalizeQNameNONS(., $nsmap)
         order by local-name-from-QName($name), prefix-from-QName($name)        
         return
             <shax:property name="{$name}">{
@@ -154,13 +167,15 @@ declare function f:xsd2shax_properties($nsmap as element(zz:nsMap)?, $schemas as
  : @param schemas the schema elements to be considered
  : @return SHAX object types
  :)
-declare function f:xsd2shax_objectTypes($nsmap as element(zz:nsMap)?, $schemas as element(xs:schema)+)
+declare function f:xsd2shax_objectTypes($options as element(options)?,
+                                        $nsmap as element(zz:nsMap)?, 
+                                        $schemas as element(xs:schema)+)
         as element(shax:objectType)* {
     let $ctypes := $schemas/xs:complexType
     let $ctypes_sc := $ctypes[.//xs:simpleContent]
     let $ctypes_cc := $ctypes except $ctypes_sc
-    let $otypes_sc := f:xsd2shax_objectTypes_sc($ctypes_sc, $nsmap, $schemas)
-    let $otypes_cc := f:xsd2shax_objectTypes_cc($ctypes_cc, $nsmap, $schemas)    
+    let $otypes_sc := f:xsd2shax_objectTypes_sc($ctypes_sc, $options, $nsmap, $schemas)
+    let $otypes_cc := f:xsd2shax_objectTypes_cc($ctypes_cc, $options, $nsmap, $schemas)    
     let $otypes :=
         for $ot in ($otypes_sc, $otypes_cc)
         let $name := $ot/@name/tt:resolveNormalizedQName(., $nsmap)
@@ -179,11 +194,12 @@ declare function f:xsd2shax_objectTypes($nsmap as element(zz:nsMap)?, $schemas a
  : @param schemas the schema elements to be considered
  : @return SHAX object types
  :)
-declare function f:xsd2shax_objectTypes_sc($ctypes as element(xs:complexType)*, 
+declare function f:xsd2shax_objectTypes_sc($ctypes as element(xs:complexType)*,
+                                           $options as element(options)?,
                                            $nsmap as element(zz:nsMap)?,
                                            $schemas as element(xs:schema)+)
         as element(shax:objectType)* {                                           
-    for $ctype in $ctypes return f:xsd2shax_objectType_sc($ctype, $nsmap, $schemas)
+    for $ctype in $ctypes return f:xsd2shax_objectType_sc($ctype, $options, $nsmap, $schemas)
 };
 
 (:~
@@ -195,11 +211,12 @@ declare function f:xsd2shax_objectTypes_sc($ctypes as element(xs:complexType)*,
  : @param schemas the schema elements to be considered
  : @return SHAX object types
  :)
-declare function f:xsd2shax_objectTypes_cc($ctypes as element(xs:complexType)*, 
+declare function f:xsd2shax_objectTypes_cc($ctypes as element(xs:complexType)*,
+                                           $options as element(options)?,
                                            $nsmap as element(zz:nsMap)?,
                                            $schemas as element(xs:schema)+)
         as element(shax:objectType)* {
-    for $ctype in $ctypes return f:xsd2shax_objectType_cc($ctype, $nsmap, $schemas)        
+    for $ctype in $ctypes return f:xsd2shax_objectType_cc($ctype, $options, $nsmap, $schemas)        
 };        
 
 (:~
@@ -214,6 +231,7 @@ declare function f:xsd2shax_objectTypes_cc($ctypes as element(xs:complexType)*,
  : @return SHAX object types
  :)
 declare function f:xsd2shax_objectType_sc($ctype as element(xs:complexType), 
+                                          $options as element(options)?,
                                           $nsmap as element(zz:nsMap)?,
                                           $schemas as element(xs:schema)*)
         as element(shax:objectType) {
@@ -241,7 +259,7 @@ declare function f:xsd2shax_objectType_sc($ctype as element(xs:complexType),
         if (not($isBaseSimple)) then () (: value property taken care of by a base type :)
         else <nons:value type="{$baseNorm}"/>
     
-    let $properties := f:xsd2shax_typeContentItems($ctype, $nsmap, $schemas)
+    let $properties := f:xsd2shax_typeContentItems($ctype, $options, $nsmap, $schemas)
     let $class := 
         if (ends-with(local-name-from-QName($name), 'Type')) then replace(string($name), 'Type$', '')
         else ()
@@ -264,6 +282,7 @@ declare function f:xsd2shax_objectType_sc($ctype as element(xs:complexType),
  : @return SHAX object types
  :)
 declare function f:xsd2shax_objectType_cc($ctype as element(xs:complexType),
+                                          $options as element(options)?,
                                           $nsmap as element(zz:nsMap)?,
                                           $schemas as element(xs:schema)*)
         as element(shax:objectType) {
@@ -276,7 +295,7 @@ declare function f:xsd2shax_objectType_cc($ctype as element(xs:complexType),
             else
                 let $tname := $base/resolve-QName(., ..) ! tt:normalizeQName(., $nsmap)
                 return attribute extends {$tname}
-    let $properties := f:xsd2shax_typeContentItems($ctype, $nsmap, $schemas)
+    let $properties := f:xsd2shax_typeContentItems($ctype, $options, $nsmap, $schemas)
     let $class := 
         if (ends-with(local-name-from-QName($name), 'Type')) then replace(string($name), 'Type$', '')
         else ()
@@ -298,10 +317,11 @@ declare function f:xsd2shax_objectType_cc($ctype as element(xs:complexType),
  : @return SHAX object types
  :)
 declare function f:xsd2shax_typeContentItems($ctype as element(xs:complexType), 
+                                             $options as element(options)?,
                                              $nsmap as element(zz:nsMap)?,
                                              $schemas as element(xs:schema)*)
         as node()* {
-    f:xsd2shax_typeContentItemsRC($ctype, $nsmap, $schemas)
+    f:xsd2shax_typeContentItemsRC($ctype, $options, $nsmap, $schemas)
 };        
 
 (:~
@@ -313,12 +333,14 @@ declare function f:xsd2shax_typeContentItems($ctype as element(xs:complexType),
  : @return SHAX object types
  :)
 declare function f:xsd2shax_typeContentItemsRC($n as node(),
+                                               $options as element(options)?,
                                                $nsmap as element(zz:nsMap)?,
                                                $schemas as element(xs:schema)*)
         as node()* {
     typeswitch($n)
     case element(xs:annotation) return
-        <shax:annotation source="xsd">{$n}</shax:annotation>
+        if ($options/@ignoreAnno[string()]/xs:boolean(.)) then ()
+        else <shax:annotation source="xsd">{$n}</shax:annotation>
         
     case element(xs:complexType) | 
          element(xs:simpleContent) | 
@@ -326,13 +348,13 @@ declare function f:xsd2shax_typeContentItemsRC($n as node(),
          element(xs:extension) | 
          element(xs:restriction) return
         for $c in $n/node() return
-            f:xsd2shax_typeContentItemsRC($c, $nsmap, $schemas)
+            f:xsd2shax_typeContentItemsRC($c, $options, $nsmap, $schemas)
             
     case element(xs:sequence) | element(xs:all) return
         (: @TO.DO - take minOccurs/maxOccurs into account ! :)
         let $items :=
             for $c in $n/node() return 
-                f:xsd2shax_typeContentItemsRC($c, $nsmap, $schemas)
+                f:xsd2shax_typeContentItemsRC($c, $options, $nsmap, $schemas)
             
         let $card := f:cardinalityDescForXsdComp($n) 
         let $cardAtt := attribute card {$card} [string($card)]
@@ -351,15 +373,15 @@ declare function f:xsd2shax_typeContentItemsRC($n as node(),
             let $card := f:cardinalityDescForXsdComp($n) return
                 attribute card {$card} [string($card)],
             for $a in $n/(@* except (@minOccurs, @maxOccurs)) return 
-                f:xsd2shax_typeContentItemsRC($a, $nsmap, $schemas), 
+                f:xsd2shax_typeContentItemsRC($a, $options, $nsmap, $schemas), 
             for $c in $n/node() return 
-                f:xsd2shax_typeContentItemsRC($c, $nsmap, $schemas) 
+                f:xsd2shax_typeContentItemsRC($c, $options, $nsmap, $schemas) 
         }</shax:choice>
         
     case element(xs:attributeGroup) return
         let $def := f:findAttributeGroup($n/@ref/resolve-QName(., ..), $nsmap, $schemas)
         return
-            $def/*/f:xsd2shax_typeContentItemsRC(., $nsmap, $schemas)
+            $def/*/f:xsd2shax_typeContentItemsRC(., $options, $nsmap, $schemas)
             
     case element(xs:element) | element(xs:attribute) return
         (: @TO.DO - rethink how to treat namespace-less components;

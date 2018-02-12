@@ -68,12 +68,13 @@ declare function f:shaclFromShaxExpanded_topElements($shaxExpanded as element())
     let $typeQName := $type/resolve-QName(., ..)
     let $node := $property/@node
     let $typeConstraint :=
-        if ($type) then concat('   sh:datatype xsd:', local-name-from-QName($typeQName))
-        else if ($node) then concat('   sh:node ', $node)
+        if ($type) then concat('    sh:datatype xsd:', local-name-from-QName($typeQName))
+        else if ($node) then concat('    sh:node ', $node)
         else ()
     where $typeConstraint
     return (
-            concat('_e:_DocumentType', $pos),
+            (: concat('_e:_DocumentType', $pos), :)
+            concat('_e:_RootResource___', $property/@name/replace(., ':', '___')),
             concat('    a sh:NodeShape ;', ''),
             concat('    sh:targetObjectsOf ', $property/@name, ' ;'),
             concat($typeConstraint, ' .'),
@@ -441,7 +442,7 @@ declare function f:serializeShaclxRC($n as node(),
             concat($prefix, 'sh:maxLength ', $n/@number)
             
         case element(stx:pattern) return
-            concat($prefix, 'sh:pattern "', $n/@string, '"')
+            concat($prefix, 'sh:pattern "', $n/@string/replace(., '\\', '\\\\'), '"')
             
         case element(stx:flags) return
             concat($prefix, 'sh:flags "', $n/@string, '"')
