@@ -116,7 +116,7 @@ declare function f:writeXsds($xsds as element(xs:schema)+,
                 let $xsdElem := $xsdsSorted[$pos]
                 let $xsdWithImports :=
                     element {node-name($xsdElem)} {
-                        f:copyNamespaces($xsdElem),
+                        f:namespaceNodes($xsdElem),
                         $xsdElem/@*,
                         $imports,
                         $xsdElem/node()
@@ -198,7 +198,7 @@ declare function f:getXsdCompsRC($n as node(), $tns as xs:string?)
                      attribute type {$useTypeName}
         return
             <xs:element name="{$lname}" shax:tns="{$tns}">{
-                f:copyNamespaces($n),
+                f:namespaceNodes($n),
                 $prefixAtt,
                 $type
             }</xs:element>
@@ -232,7 +232,7 @@ declare function f:getXsdCompsRC($n as node(), $tns as xs:string?)
                 }</xs:sequence>
         return
             <xs:complexType name="{$lname}" shax:tns="{$tns}">{
-                f:copyNamespaces($n),
+                f:namespaceNodes($n),
                 $prefixAtt,
                 if ($baseType) then
                     <xs:complexContent>{
@@ -273,7 +273,7 @@ declare function f:getXsdCompsRC($n as node(), $tns as xs:string?)
                     let $itemType :=
                         let $sourceDataType :=
                             element {node-name($n)} {
-                                f:copyNamespaces($n),
+                                f:namespaceNodes($n),
                                 $n/(@* except (@name, @container, @minSize, @maxSize, @size)),
                                 $n/node()
                             }
@@ -334,7 +334,7 @@ declare function f:getXsdCompsRC($n as node(), $tns as xs:string?)
                 else $qname
             return
             <xs:element name="{$ename}">{
-                f:copyNamespaces($n),
+                f:namespaceNodes($n),
                 $cardAtts,
                 $type,
                 ()
@@ -408,7 +408,7 @@ declare function f:finalizeSchemaRC($n as node())
     case document-node() return document {for $c in $n/node() return f:finalizeSchemaRC($c)}
     case element(xs:schema) return
         element {node-name($n)} {
-            f:copyNamespaces($n),
+            f:namespaceNodes($n),
             for $a in $n/@* return f:finalizeSchemaRC($a),
             for $c in $n/node() return f:finalizeSchemaRC($c)
         }

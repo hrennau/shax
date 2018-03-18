@@ -23,14 +23,13 @@ declare namespace z="http://www.ttools.org/shax/ns/structure";
 declare namespace zz="http://www.ttools.org/structure";
 
 (:~
- : Creates namespace nodes capturing the in-scope-namespaces of
- : a given element.
+ : Returns copies of the namespace nodes of an element.
  :
- : @param elem the element
- : @return namespace nodes
+ : @param elem the element whose namespace nodes shall be copied
+ : @return copies of the namespace nodes of $elem
  :)
-declare function f:copyNamespaces($elem as element())
-        as node()* {
+declare function f:namespaceNodes($elem as element()) 
+        as namespace-node()+ {
     for $prefix in in-scope-prefixes($elem) return
         namespace {$prefix} {namespace-uri-for-prefix($prefix, $elem)}
 };

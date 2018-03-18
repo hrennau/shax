@@ -75,6 +75,7 @@ declare function m:rmElemNamespaces($n as node())
     default return $n        
 };        
 
+(:
 declare function m:prettyPrint($n as node())
         as node()? {
     typeswitch($n)
@@ -94,6 +95,7 @@ declare function m:prettyPrint($n as node())
         if ($n/../* and not(matches($n, '\S'))) then () else $n
     default return $n
 };
+:)
 
 (:~
  : Checks if all items of an item sequence are castable to a given type.

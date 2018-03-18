@@ -155,7 +155,7 @@ declare function f:shaclxFromShaxExpandedRC($n as node(),
                                             $indent as xs:integer,
                                             $deep as xs:boolean)
         as node()* {
-    let $nss := $n/self::*/i:copyNamespaces(.) return
+    let $nss := $n/self::*/i:namespaceNodes(.) return
     
     typeswitch($n)
     case comment() return 
@@ -333,7 +333,7 @@ declare function f:shaclxFromShaxExpandedRC($n as node(),
  :)
 declare function f:shaclxFromShaxExpanded_facets($elem as element())
         as element()* {
-    let $nss := i:copyNamespaces($elem)        
+    let $nss := i:namespaceNodes($elem)        
     let $values :=
         let $items := $elem/shax:value/string()
         return
@@ -343,7 +343,7 @@ declare function f:shaclxFromShaxExpanded_facets($elem as element())
                 for $item in $items
                 return
                     <stx:value>{
-                        i:copyNamespaces($elem),
+                        i:namespaceNodes($elem),
                         if ($datatypeQName eq $i:QNAME_XSDTYPE_STRING) then attribute string {$item}
                         else if ($datatypeQName eq $i:QNAME_XSDTYPE_INTEGER) then attribute number {$item}                        
                         else (attribute literal {$item}, attribute type {$datatypeQName})

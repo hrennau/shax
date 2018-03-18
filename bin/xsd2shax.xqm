@@ -31,8 +31,11 @@ import module namespace i="http://www.ttools.org/shax/ns/xquery-functions" at
     "shaxLoader.xqm",
     "schemaLoader.xqm",
     "targetNamespaceTools.xqm",
+    "typeGlobalizer.xqm",
     "util.xqm",
     "xsdComponentManager.xqm";
+
+    (: "typeGlobalizer.xqm", :) 
     
 declare namespace z="http://www.ttools.org/shax/ns/structure";
 declare namespace zz="http://www.ttools.org/structure";
@@ -81,16 +84,26 @@ declare function f:xsd2shax($options as element(options)?,
     (: normalize schemas 
             to be considered - probably namespace normalization necessary  
             in order to exclude inconsistent prefix bindings :)
-    let $schemas01 := $schemas
+    let $schemas00 := $schemas
+    
+    (: globalize any local type definitions :)
+    let $schemas01 :=      
+        let $localTypes := $schemas00//(xs:simpleType, xs:complexType)[not(@name)]
+        return
+            if (not($localTypes)) then $schemas00
+            else
+                let $_DEBUG := trace(count($localTypes),
+                    'Globalize local types, count: ') return        
+                f:schemasWithGlobalizedTypes($schemas00)
 
     (: properties :)
-    let $properties := f:xsd2shax_properties($nsmap, $schemas)
+    let $properties := f:xsd2shax_properties($nsmap, $schemas01)
 
     (: object types :)
-    let $otypes := f:xsd2shax_objectTypes($options, $nsmap, $schemas)
+    let $otypes := f:xsd2shax_objectTypes($options, $nsmap, $schemas01)
 
     (: data types :)
-    let $dtypes := f:xsd2shax_dataTypes($nsmap, $schemas)
+    let $dtypes := f:xsd2shax_dataTypes($nsmap, $schemas01)
 
     (: content :)
     let $content := (

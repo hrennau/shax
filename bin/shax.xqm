@@ -203,7 +203,7 @@ declare function f:expandShax1RC($n as node(),
             
         return
             element {node-name($n)} {
-                f:copyNamespaces($n),
+                f:namespaceNodes($n),
                 if ($card or not($defaultCard)) then () else attribute card {$defaultCard},
                 for $a in $n/@* return f:expandShax1RC($a, $defaultCards),                
                 for $c in $n/node() return f:expandShax1RC($c, $defaultCards)
@@ -242,7 +242,7 @@ declare function f:expandShax2RC($n as node(), $sgroups as map(xs:QName, xs:QNam
                 let $DUMMY := trace(count($groupMembers), 'COUNT_GROUP_MEMBERS: ')
                 return
                     <shax:choice kind="substitutionGroup">{
-                        f:copyNamespaces($n),
+                        f:namespaceNodes($n),
                         $cardAttribute,
                         for $groupMember in $groupMembers
                         let $name := $groupMember/@name/resolve-QName(., ..)
@@ -254,7 +254,7 @@ declare function f:expandShax2RC($n as node(), $sgroups as map(xs:QName, xs:QNam
                     }</shax:choice>
             else
                 element {node-name($n)} {
-                    f:copyNamespaces($n),
+                    f:namespaceNodes($n),
                     for $a in $n/@* return f:expandShax2RC($a, $sgroups),
                     for $c in $n/node() return f:expandShax2RC($c, $sgroups)
                 }
@@ -280,7 +280,7 @@ declare function f:expandShax3RC($n as node())
     (: shax:objectType => shax:shape :)
     case element(shax:objectType) return
         <shax:shape>{
-            f:copyNamespaces($n),
+            f:namespaceNodes($n),
             for $a in $n/@* return f:expandShax3RC($a),
             for $c in $n/node() return f:expandShax3RC($c)
         }</shax:shape>
@@ -291,7 +291,7 @@ declare function f:expandShax3RC($n as node())
     (: shax:pgroup => shax:shape :)
     case element(shax:pgroup) return
         <shax:shape>{
-            f:copyNamespaces($n),        
+            f:namespaceNodes($n),        
             let $atts := for $a in $n/@* return f:expandShax3RC($a)
             return (
                 $atts,
@@ -315,7 +315,7 @@ declare function f:expandShax3RC($n as node())
     case element() return
         let $elem :=
             element {node-name($n)} {
-                f:copyNamespaces($n),            
+                f:namespaceNodes($n),            
                 for $a in $n/@* return f:expandShax3RC($a),
                 for $c in $n/node() return f:expandShax3RC($c)
             }
@@ -329,7 +329,7 @@ declare function f:expandShax3RC($n as node())
                     /descendant-or-self::*[f:isPropertyNode(.)]/node-name()
                 return
                     <shax:shape>{
-                        f:copyNamespaces($n),
+                        f:namespaceNodes($n),
                         attribute docum {"choice branch consisting of a single property"},
                         <shax:excludeProperties iris="{$otherProps}"/>,
                         $elem
@@ -398,7 +398,7 @@ declare function f:expandShax3RC_choice($n as node())
     let $contents_children := $contents except $contents_atts
     return
         <shax:xone docum="choice between properties and/or property groups">{
-            f:copyNamespaces($n),        
+            f:namespaceNodes($n),        
             $contents_atts,
                 
             (: express the possibility to NOT use the choice :)    
@@ -407,7 +407,7 @@ declare function f:expandShax3RC_choice($n as node())
                 let $choiceProps := $n/descendant-or-self::*[f:isPropertyNode(.)]/node-name()
                 return
                     <shax:shape>{
-                        f:copyNamespaces($n),
+                        f:namespaceNodes($n),
                         attribute docum {"choice branch representing NOT using the choice"},
                         <shax:excludeProperties iris="{$choiceProps}"/>
                     }</shax:shape>,
@@ -443,7 +443,7 @@ declare function f:expandShax4RC($n as node())
          element(shax:dataType) 
     return
         element {node-name($n)} {
-            f:copyNamespaces($n),        
+            f:namespaceNodes($n),        
             for $a in $n/@* return f:expandShax4RC($a),
             for $c in $n/node() return f:expandShax4RC($c)
         }
@@ -451,7 +451,7 @@ declare function f:expandShax4RC($n as node())
     case element() return
         if ($n/self::shax:*) then
             element {node-name($n)} {
-                f:copyNamespaces($n),            
+                f:namespaceNodes($n),            
                 for $a in $n/@* return f:expandShax4RC($a),
                 for $c in $n/node() return f:expandShax4RC($c)
             }
@@ -480,7 +480,7 @@ declare function f:expandShax4RC($n as node())
             let $cardAtt := f:getPropertyCardinality($propUse)
             return                
                 <shax:pshape path="{$path}">{
-                    f:copyNamespaces($propDecl),   
+                    f:namespaceNodes($propDecl),   
                     $baseAtt,
                     $typeAtt,
                     $kindAtt,
@@ -518,7 +518,7 @@ declare function f:expandShax5RC($n as node())
         let $facetElems := f:getShaclFacets_elems($n)        
         return
             <shax:shape name="{$n/@name}">{
-                f:copyNamespaces($n),
+                f:namespaceNodes($n),
                 $baseAtt,
                 $itemTypeAtt, 
                 $containerAtt,
@@ -532,7 +532,7 @@ declare function f:expandShax5RC($n as node())
         
     case element() return
         element {node-name($n)} {
-            f:copyNamespaces($n),        
+            f:namespaceNodes($n),        
             for $a in $n/@* return f:expandShax5RC($a),
             for $c in $n/node() return f:expandShax5RC($c)
         }
@@ -616,7 +616,7 @@ declare function f:expandShax6RC($n as node(), $shapeNames as xs:QName*)
                 
     case element() return
         element {node-name($n)} {
-            f:copyNamespaces($n),        
+            f:namespaceNodes($n),        
             for $a in $n/@* return f:expandShax6RC($a, $shapeNames),
             for $c in $n/node() return f:expandShax6RC($c, $shapeNames)
         }

@@ -6,12 +6,11 @@
  : -------------------------------------------------------------------------
  :)
  
-(:~@operations
+(:~@ operations
    <operations>
-      <operation name="load" type="node()" func="loadOp">     
-         <param name="xsd" type="docFOX*" sep="WS" pgroup="input"/>
-         <param name="xsdCat" type="docCAT*" sep="WS" pgroup="input"/>
-         <param name="retainChameleons" type="xs:boolean?" default="false" />
+      <operation name="loadXsds" type="node()" func="loadXsdsOp">     
+         <param name="xsd" type="docFOX*" sep="SC" pgroup="input"/>
+         <param name="xsdCat" type="docCAT*" sep="WS" pgroup="input"/>        
          <pgroup name="input" minOccurs="1"/>         
       </operation>
     </operations>  
@@ -31,7 +30,7 @@ import module namespace tt="http://www.ttools.org/xquery-functions" at
     "tt/_nameFilter.xqm",
     "tt/_pcollection.xqm";    
     
-declare namespace z="http://www.xsdplus.org/ns/structure";
+declare namespace z="http://www.ttools.org/shax/ns/structure";
 
 (:
  : ============================================================================
@@ -48,12 +47,11 @@ declare namespace z="http://www.xsdplus.org/ns/structure";
  : @param request the operation request
  : @return a report describing ...
  :) 
-declare function f:loadOp($request as element())
+declare function f:loadXsdsOp($request as element())
         as element() {
-    let $retainChameleons := tt:getParam($request, 'retainChameleons')
     let $docs := tt:getParams($request, 'xsd xsdCat')
     let $schemaRoots := $docs//xs:schema
-    let $schemas := f:schemaElems($schemaRoots, $retainChameleons)
+    let $schemas := f:schemaElems($schemaRoots)
     return
         <z:schemas countSchemas="{count($schemas)}">{
            $schemas
@@ -68,26 +66,9 @@ declare function f:loadOp($request as element())
  :)
 declare function f:getSchemas($request as element())
         as element(xs:schema)* {        
-    let $headSchemas := tt:getParams($request, 'xsd xsds')/*
-    let $retainChameleons := (tt:getParam($request, 'retainChameleons'), false())[1]    
+    let $headSchemas := tt:getParams($request, 'xsd xsds')/*    
     return 
-        if (not($headSchemas)) then () else f:schemaElems($headSchemas, $retainChameleons)        
-};
-
-(:~
- : Retrieves all schemas specified by standard request parameters, or directly or
- : indirectly included or imported by specified schemas.
- :
- : @param request the operation request
- : @param retainChameleons if true, chameleon schemas are retained as such, rather than 
- :   transformed into schemas with a target namespace equal to the target namespace
- :   of the including schema
- :)
-declare function f:getSchemas($request as element(), $retainChameleons as xs:boolean)
-        as element(xs:schema)* {        
-    let $headSchemas := tt:getParams($request, 'xsd xsds')/*
-    return 
-        if (not($headSchemas)) then () else f:schemaElems($headSchemas, $retainChameleons)        
+        if (not($headSchemas)) then () else f:schemaElems($headSchemas)        
 };
 
 (:~ 
@@ -103,27 +84,18 @@ declare function f:getSchemas($request as element(), $retainChameleons as xs:boo
  : errors item contains one xs:error child for each failure to resolve, 
  : delivering diagnostic information.
  :
- : @param $rootSchemas   the root xs:schema elements identifying the schema
- : @param $retainChameleons if true, chameleon schemas are not transformed into
- :    a schema with the including schema's target namespace
+ : @param $rootSchema   the root xs:schema element identifying the schema
  : @return a sequence of schema elements and/or one error item, which is
  : an xe:error or an xe:errors element
  :
  : @version 0.1-20100107
  :)
- declare function f:schemaElems($rootSchemas as element(xs:schema)+) 
+declare function f:schemaElems($rootSchemas as element(xs:schema)+) 
         as element()* {
-    f:schemaElems($rootSchemas, false())        
-};
-
-declare function f:schemaElems($rootSchemas as element(xs:schema)+,
-                               $retainChameleons as xs:boolean) 
-        as element()* {
-    (: let $_DEBUG := trace($retainChameleons, 'RETAIN_CHAMELEONS: ') :)
     let $uris := for $rootSchema in $rootSchemas return base-uri($rootSchema)
     let $uriNorms := for $uri in $uris return f:normalizeUri($uri)
 
-    let $elems := f:_schemaElems($rootSchemas, $retainChameleons, $uriNorms, ())[. instance of node()]
+    let $elems := f:_schemaElems($rootSchemas, $uriNorms, ())[. instance of node()]
     let $errors := tt:extractErrors($elems)
     return
         if ($errors) then
@@ -174,7 +146,7 @@ declare function f:schemaElems($rootSchemas as element(xs:schema)+,
 };
 
 (:~ 
- : Private helper function for function "schemaElems". Recurses over the
+ : <p/> Private helper function for function "schemaElems". Recurses over the
  : tree of schema elements directly or indirectly imported or included by
  : a root schema. Returns the root schema and representations of those
  : included/imported schema elements. If an included/imported schema
@@ -194,8 +166,6 @@ declare function f:schemaElems($rootSchemas as element(xs:schema)+,
  : the including schema's target namespace. 
  :
  : @param $rootSchema   the root schema element identifying the schema
- : @param $retainChameleons if true, chameleon schemas are not transformed into
- :    a schema with the including schema's target namespace
  : @param $foundSoFar   normalized URIs of schema elements produced by 
  :                      preceding recursion steps
  : @param $remainingChildren a sequence of xs:include and/or xs:import elements
@@ -206,9 +176,8 @@ y :
  : @version 0.1-20100105
  :)
 declare function f:_schemaElems($rootSchemas as element(xs:schema)+, 
-                                $retainChameleons as xs:boolean,
-                                $foundSoFar as xs:string*,
-                                $remainingChildren as element()*) 
+                                 $foundSoFar as xs:string*,
+                                 $remainingChildren as element()*) 
     as item()* {   
    let $rootSchema := $rootSchemas[1]
    let $remainingRootSchemas := tail($rootSchemas)
@@ -228,9 +197,9 @@ declare function f:_schemaElems($rootSchemas as element(xs:schema)+,
      return
         if (empty($children)) then 
            if (empty($remainingRootSchemas)) then ()
-           else f:_schemaElems($remainingRootSchemas, $retainChameleons, $foundSoFar, ())
+           else f:_schemaElems($remainingRootSchemas, $foundSoFar, ())
         else
-           f:_schemaElems($rootSchemas, $retainChameleons, $foundSoFar, $children)
+           f:_schemaElems($rootSchemas, $foundSoFar, $children)
    )
 
    (: within recursion over one level of <xs:import> and <xs:include> elements 
@@ -246,8 +215,7 @@ declare function f:_schemaElems($rootSchemas as element(xs:schema)+,
          let $schema := doc($uriNorm)//xs:schema
          let $schema :=
             (: case A) not a chameleon => take as is :)
-            if ($actChild/self::xs:import or not($rootSchema/@targetNamespace) or $schema/@targetNamespace
-                or $retainChameleons)
+            if ($actChild/self::xs:import or not($rootSchema/@targetNamespace) or $schema/@targetNamespace)
                then
                   if ($foundSoFar = $uriNorm) then () else $schema
 
@@ -275,7 +243,7 @@ declare function f:_schemaElems($rootSchemas as element(xs:schema)+,
                if (tt:extractErrors($schema)) then 
                   ($schema, $uriNorm, $foundSoFar)
                else
-                  f:_schemaElems($schema, $retainChameleons, ($foundSoFar, $uriUsed), ())
+                  f:_schemaElems($schema, ($foundSoFar, $uriUsed), ())
 
          )
       let $remainingChildrenContribution :=
@@ -285,7 +253,7 @@ declare function f:_schemaElems($rootSchemas as element(xs:schema)+,
                ($foundSoFar, $actChildContribution
                   [. instance of xs:anyAtomicType] [not(starts-with(., '$$$'))]))
          return
-            f:_schemaElems($rootSchema, $retainChameleons, $nextFoundSoFar, $nextRemainingChildren)
+            f:_schemaElems($rootSchema, $nextFoundSoFar, $nextRemainingChildren)
       let $remainingRootSchemasContribution :=
          if (empty($remainingRootSchemas)) then () else
          let $nextFoundSoFar :=
@@ -293,8 +261,7 @@ declare function f:_schemaElems($rootSchemas as element(xs:schema)+,
                ($foundSoFar, ($actChildContribution, $remainingChildrenContribution)
                   [. instance of xs:anyAtomicType] [not(starts-with(., '$$$'))]))
          return
-            f:_schemaElems($remainingRootSchemas, $retainChameleons, $nextFoundSoFar, ())
+            f:_schemaElems($remainingRootSchemas, $nextFoundSoFar, ())
       return
          ($actChildContribution, $remainingChildrenContribution, $remainingRootSchemasContribution)
 };
-

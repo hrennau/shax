@@ -1,7 +1,7 @@
 (:
  : shax - 
  :
- : @version 2018-02-12T00:13:55.94+01:00 
+ : @version 2018-03-18T22:08:35.313+01:00 
  :)
 
 import module namespace tt="http://www.ttools.org/xquery-functions" at
@@ -13,6 +13,8 @@ import module namespace tt="http://www.ttools.org/xquery-functions" at
 import module namespace a1="http://www.ttools.org/shax/ns/xquery-functions" at
     "schemaLoader.xqm",
     "shax.xqm",
+    "typeGlobalizer.xqm",
+    "xml2rdf.xqm",
     "xsd.xqm",
     "xsd2shax.xqm";
 
@@ -81,9 +83,10 @@ declare variable $toolScheme :=
     <operation name="_nodlSample" type="node()" func="nodlSample" mod="tt/_pcollection.xqm" namespace="http://www.ttools.org/xquery-functions">
       <param name="model" type="xs:string?" fct_values="xml, sql, mongo" default="xml"/>
     </operation>
-    <operation name="loadXsds" type="node()" func="loadXsdsOp" mod="schemaLoader.xqm" namespace="http://www.ttools.org/shax/ns/xquery-functions">
-      <param name="xsd" type="docFOX*" sep="SC" pgroup="input"/>
+    <operation name="load" type="node()" func="loadOp" mod="schemaLoader.xqm" namespace="http://www.ttools.org/shax/ns/xquery-functions">
+      <param name="xsd" type="docFOX*" sep="WS" pgroup="input"/>
       <param name="xsdCat" type="docCAT*" sep="WS" pgroup="input"/>
+      <param name="retainChameleons" type="xs:boolean?" default="false"/>
       <pgroup name="input" minOccurs="1"/>
     </operation>
     <operation name="shacl" type="item()" func="shaclOp" mod="shax.xqm" namespace="http://www.ttools.org/shax/ns/xquery-functions">
@@ -91,6 +94,22 @@ declare variable $toolScheme :=
       <pgroup name="input" minOccurs="1"/>
       <param name="format" type="xs:string?" default="ttl" fct_values="xml, ttl"/>
       <param name="deep" type="xs:boolean?" default="false"/>
+    </operation>
+    <operation name="globalizeTypes" type="element()?" func="globalizeTypesOp" mod="typeGlobalizer.xqm" namespace="http://www.ttools.org/shax/ns/xquery-functions">
+      <param name="xsd" type="docFOX*" sep="SC" pgroup="in" fct_minDocCount="1"/>
+      <param name="xsds" type="docCAT*" sep="SC" pgroup="in"/>
+      <param name="odir" type="directory?" fct_dirExists="true"/>
+      <pgroup name="in" minOccurs="1"/>
+    </operation>
+    <operation name="localTypesReport" type="element()?" func="localTypesReportOp" mod="typeGlobalizer.xqm" namespace="http://www.ttools.org/shax/ns/xquery-functions">
+      <param name="xsd" type="docFOX*" sep="SC" pgroup="in" fct_minDocCount="1"/>
+      <param name="xsds" type="docCAT*" sep="SC" pgroup="in"/>
+      <param name="skipAnno" type="xs:boolean?" default="true"/>
+      <pgroup name="in" minOccurs="1"/>
+    </operation>
+    <operation name="xml2rdf" type="element()" func="xml2rdfOp" mod="xml2rdf.xqm" namespace="http://www.ttools.org/shax/ns/xquery-functions">
+      <param name="dox" type="docFOX+" fct_minDocCount="1" sep="SC"/>
+      <param name="format" type="xs:string?" default="xml"/>
     </operation>
     <operation name="xsd" type="item()*" func="xsdOp" mod="xsd.xqm" namespace="http://www.ttools.org/shax/ns/xquery-functions">
       <param name="shax" type="docFOX+" sep="SC" fct_minDocCount="1" pgroup="input"/>
@@ -251,14 +270,14 @@ declare function m:execOperation__nodlSample($request as element())
 };
      
 (:~
- : Executes operation 'loadXsds'.
+ : Executes operation 'load'.
  :
  : @param request the request element
  : @return the operation result
  :)
-declare function m:execOperation_loadXsds($request as element())
+declare function m:execOperation_load($request as element())
         as node() {
-    a1:loadXsdsOp($request)        
+    a1:loadOp($request)        
 };
      
 (:~
@@ -270,6 +289,39 @@ declare function m:execOperation_loadXsds($request as element())
 declare function m:execOperation_shacl($request as element())
         as item() {
     a1:shaclOp($request)        
+};
+     
+(:~
+ : Executes operation 'globalizeTypes'.
+ :
+ : @param request the request element
+ : @return the operation result
+ :)
+declare function m:execOperation_globalizeTypes($request as element())
+        as element()? {
+    a1:globalizeTypesOp($request)        
+};
+     
+(:~
+ : Executes operation 'localTypesReport'.
+ :
+ : @param request the request element
+ : @return the operation result
+ :)
+declare function m:execOperation_localTypesReport($request as element())
+        as element()? {
+    a1:localTypesReportOp($request)        
+};
+     
+(:~
+ : Executes operation 'xml2rdf'.
+ :
+ : @param request the request element
+ : @return the operation result
+ :)
+declare function m:execOperation_xml2rdf($request as element())
+        as element() {
+    a1:xml2rdfOp($request)        
 };
      
 (:~
@@ -329,8 +381,11 @@ declare function m:execOperation($req as element())
         else if ($opName eq '_copyNcat') then m:execOperation__copyNcat($req)
         else if ($opName eq '_deleteNcat') then m:execOperation__deleteNcat($req)
         else if ($opName eq '_nodlSample') then m:execOperation__nodlSample($req)
-        else if ($opName eq 'loadXsds') then m:execOperation_loadXsds($req)
+        else if ($opName eq 'load') then m:execOperation_load($req)
         else if ($opName eq 'shacl') then m:execOperation_shacl($req)
+        else if ($opName eq 'globalizeTypes') then m:execOperation_globalizeTypes($req)
+        else if ($opName eq 'localTypesReport') then m:execOperation_localTypesReport($req)
+        else if ($opName eq 'xml2rdf') then m:execOperation_xml2rdf($req)
         else if ($opName eq 'xsd') then m:execOperation_xsd($req)
         else if ($opName eq 'xsd2shax') then m:execOperation_xsd2shax($req)
         else if ($opName eq '_help') then m:execOperation__help($req)

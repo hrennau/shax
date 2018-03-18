@@ -22,21 +22,6 @@ import module namespace i="http://www.ttools.org/shax/ns/xquery-functions" at
 declare namespace shax="http://shax.org/ns/model";
 declare namespace z="http://www.ttools.org/shax/ns/structure";
 
-(:
-(:~
- : Creates namespace nodes capturing the in-scope-namespaces of
- : a given element.
- :
- : @param elem the element
- : @return namespace nodes
- :)
-declare function f:copyNamespaces($elem as element())
-        as node()* {
-    for $prefix in in-scope-prefixes($elem) return
-        namespace {$prefix} {namespace-uri-for-prefix($prefix, $elem)}
-};
-:)
-
 declare function f:doesModelContainLists($shaxExpanded as element()+)
         as xs:boolean {
     exists($shaxExpanded//shax:shape/(@itemDatatype, @itemNode, @container[. eq 'list'])) or
@@ -256,7 +241,7 @@ declare function f:addCardinalityAttsRC($n as node(),
     
     case element(shax:models) return
         element {node-name($n)} {
-            f:copyNamespaces($n),        
+            f:namespaceNodes($n),        
             for $a in $n/@* return f:addCardinalityAttsRC($a, $defaultCards),
             for $c in $n/node() return f:addCardinalityAttsRC($c, $defaultCards)                
         }
@@ -269,7 +254,7 @@ declare function f:addCardinalityAttsRC($n as node(),
             }
         return
             element {node-name($n)} {
-                f:copyNamespaces($n),            
+                f:namespaceNodes($n),            
                 for $a in $n/@* return f:addCardinalityAttsRC($a, $defaultCards),
                 for $c in $n/node() return f:addCardinalityAttsRC($c, $defaultCards)                
             }
@@ -285,7 +270,7 @@ declare function f:addCardinalityAttsRC($n as node(),
                 else $defaultCards("*")
         return
             element {node-name($n)} {
-                f:copyNamespaces($n),
+                f:namespaceNodes($n),
                 if ($card or not($defaultCard)) then () else attribute card {$defaultCard},
                 for $a in $n/@* return f:addCardinalityAttsRC($a, $defaultCards),                
                 for $c in $n/node() return f:addCardinalityAttsRC($c, $defaultCards)
