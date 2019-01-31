@@ -1,7 +1,7 @@
 (:
  : shax - 
  :
- : @version 2018-03-18T22:08:35.313+01:00 
+ : @version 2019-01-31T11:21:28.962+01:00 
  :)
 
 import module namespace tt="http://www.ttools.org/xquery-functions" at
@@ -107,9 +107,16 @@ declare variable $toolScheme :=
       <param name="skipAnno" type="xs:boolean?" default="true"/>
       <pgroup name="in" minOccurs="1"/>
     </operation>
-    <operation name="xml2rdf" type="element()" func="xml2rdfOp" mod="xml2rdf.xqm" namespace="http://www.ttools.org/shax/ns/xquery-functions">
+    <operation name="rdfe" type="item()" func="rdfeOp" mod="xml2rdf.xqm" namespace="http://www.ttools.org/shax/ns/xquery-functions">
       <param name="dox" type="docFOX+" fct_minDocCount="1" sep="SC"/>
-      <param name="format" type="xs:string?" default="xml"/>
+      <param name="jox" type="jsonFOX*" fct_minDocCount="0" sep="SC"/>
+      <param name="semap" type="docFOX?" fct_minDocCount="1"/>
+      <param name="r1" type="xs:integer?"/>
+      <param name="r2" type="xs:integer?"/>
+      <param name="blankNodes" type="xs:boolean?" default="false"/>
+      <param name="format" type="xs:string?" fct_values="xmlaug, xtriples0, xtriples, triples" default="triples"/>
+      <param name="nons" type="xs:string?"/>
+      <param name="prefixNons" type="xs:string?"/>
     </operation>
     <operation name="xsd" type="item()*" func="xsdOp" mod="xsd.xqm" namespace="http://www.ttools.org/shax/ns/xquery-functions">
       <param name="shax" type="docFOX+" sep="SC" fct_minDocCount="1" pgroup="input"/>
@@ -314,14 +321,14 @@ declare function m:execOperation_localTypesReport($request as element())
 };
      
 (:~
- : Executes operation 'xml2rdf'.
+ : Executes operation 'rdfe'.
  :
  : @param request the request element
  : @return the operation result
  :)
-declare function m:execOperation_xml2rdf($request as element())
-        as element() {
-    a1:xml2rdfOp($request)        
+declare function m:execOperation_rdfe($request as element())
+        as item() {
+    a1:rdfeOp($request)        
 };
      
 (:~
@@ -385,7 +392,7 @@ declare function m:execOperation($req as element())
         else if ($opName eq 'shacl') then m:execOperation_shacl($req)
         else if ($opName eq 'globalizeTypes') then m:execOperation_globalizeTypes($req)
         else if ($opName eq 'localTypesReport') then m:execOperation_localTypesReport($req)
-        else if ($opName eq 'xml2rdf') then m:execOperation_xml2rdf($req)
+        else if ($opName eq 'rdfe') then m:execOperation_rdfe($req)
         else if ($opName eq 'xsd') then m:execOperation_xsd($req)
         else if ($opName eq 'xsd2shax') then m:execOperation_xsd2shax($req)
         else if ($opName eq '_help') then m:execOperation__help($req)

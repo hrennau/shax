@@ -58,8 +58,7 @@ declare function m:unparsed-text($href as xs:string?)
 declare function m:unparsed-text($href as xs:string?, $encoding as xs:string)
         as xs:string? {
     let $href := resolve-uri($href, $m:BASE_URI) return
-    if ($encoding = ('#none', '#0', '#')) then unparsed-text-lines($href)
-    else unparsed-text($href, $encoding)
+    unparsed-text($href, $encoding)
 };
 
 declare function m:unparsed-text-lines($href as xs:string?)

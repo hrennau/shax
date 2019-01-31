@@ -77,7 +77,7 @@ declare function f:normalizeQNameNONS(
       let $uri := namespace-uri-from-QName($qname)[string()]
       return
          if (empty($uri)) then 
-            QName($i:URI_NONS, concat('nons:', local-name-from-QName($qname)))
+            QName($i:URI_NONS_DEFAULT, concat('nons:', local-name-from-QName($qname)))
          else
             let $prefix := $nsmap/zz:ns[@uri eq $uri]/@prefix return
                 if (empty($prefix)) then $qname else
