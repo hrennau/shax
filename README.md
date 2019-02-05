@@ -1,5 +1,5 @@
 # shax
-A SHAX processor, transforming SHAX models into SHACL, XSD and JSON Schema. It can also transform XSD into SHAX.
+A SHAX processor, transforming SHAX models into SHACL, XSD and JSON Schema - and at the same time an RDFe processor. It can also transform XSD into SHAX.
 
 A command-line tool written in XQuery and based on the TopicTools framework ( https://github.com/hrennau/topictools ).
 
