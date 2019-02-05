@@ -367,10 +367,14 @@ declare function f:getResourceModelForRnode($rnode as node(), $semaps as element
     let $rootElem := $rnode/ancestor-or-self::*[last()]
     let $mySemaps := $semaps[f:semapComplementsDoc(., $rootElem)]
     let $myRmodels := $mySemaps//sc:resource[f:rmodelAppliesToNode(., $rnode)]
-    let $DUMMY := if (count($myRmodels) le 1) then () else
-        trace(string-join($myRmodels/@modelID, ', ') || ' for ' || $rnode/name(), 'MULT RMODELS: ')
+    let $errorMsg := if (count($myRmodels) le 1) then () else
+        concat('Resource node targeted by multiple resource models; resource node name: ', 
+                local-name($rnode), '; rmodel IDs: ', string-join($myRmodels/@modelID, ', '),
+                ' ; consider disambiguating by using @objectModelID="my-modelID" on <re:property>.')
     return
-        $myRmodels
+        if ($errorMsg) then
+            error(QName((), 'DYNAMIC_SEMAP_ERROR'), $errorMsg)
+        else $myRmodels
 };
 
 (:~

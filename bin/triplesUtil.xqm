@@ -47,6 +47,19 @@ declare function f:xtriple($subjectIri as xs:string,
 };        
 
 (:~
+ : Constructs a pair of xtriples, one the inverse of the other.
+ :)
+declare function f:xtriplePair($subjectIri as xs:string, 
+                               $predicateIri as xs:string,
+                               $value as item(),
+                               $inversePredicateIri as xs:string?) 
+        as element(shax:triple)+ {
+    f:xtriple($subjectIri, $predicateIri, $value, '#iri', ()),
+    if (not($inversePredicateIri)) then () else
+        f:xtriple($value, $inversePredicateIri, $subjectIri, '#iri', ())
+};        
+
+(:~
  : Constructs an xtriple, which is an XML representation of a triple.
  :
  : Structure:

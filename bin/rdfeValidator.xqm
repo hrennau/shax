@@ -82,11 +82,14 @@ declare function f:validateRdfe($semaps as element(re:semanticMap)+)
             
 };
 
-declare function f:validateRdfe_augmentExpression($expr as xs:string,
+declare function f:validateRdfe_augmentExpression($expr as node(),
                                                   $semap as element(re:semanticMap))
         as xs:string {
+    let $nsContext:= $expr/ancestor-or-self::*[1]        
     let $nsDecl := (
-        'declare namespace rdfe="' || $ref:BUILTIN_NAMESPACE_BINDINGS?rdfe || '";'        
+        'declare namespace rdfe="' || $ref:BUILTIN_NAMESPACE_BINDINGS?rdfe || '";',
+        $nsContext/in-scope-prefixes(.)[not(. = ('xml', 'rdfe'))] 
+            ! concat('declare namespace ', ., '="', namespace-uri-for-prefix(., $nsContext), '";')        
     )
     let $varNames := (
         'rdfe:docs',

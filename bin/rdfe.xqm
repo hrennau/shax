@@ -105,7 +105,7 @@ declare function f:rdfe($docs as element()*,
     let $xtriples := $xtriplesAndTripleReqs[. instance of node()]
     let $tripleReqs := $xtriplesAndTripleReqs[. instance of map(*) or . instance of array(*)]
     let $_INFO := trace(count($tripleReqs), '#COUNT_RDESC_REQUESTS: ')
-    let $_DEBUG := trace(f:DEBUG_reportTripleReqs($xtriplesAndTripleReqs), 'TRIPLE_REQS: ')
+    (: let $_DEBUG := trace(f:DEBUG_reportTripleReqs($xtriplesAndTripleReqs), 'TRIPLE_REQS: ') :)
     let $furtherXtriples := f:processTripleRequests($tripleReqs, $rnodeDict, $semaps, $collectedDynContext)
     let $xtriples1 := ($xtriples, $furtherXtriples)
     let $xtriples2 := <shax:triples>{$namespaces, $xtriples1}</shax:triples>    
@@ -443,7 +443,8 @@ declare function f:pmodel2Xtriples($rnode as node(),
     let $propertyMaxOccurs := $propertyMinMaxOccurs[2]
     
     let $isListProperty := $pmodel/@list eq 'true'
-    let $reverse := $pmodel/@reverse eq 'true'    
+    let $reverse := $pmodel/@reverse eq 'true'   
+    let $inversePropertyIri := $pmodel/@inverseIri
     let $objectRmodelId := $pmodel/@objectModelID    
     
     (: XDM items to be translated into RDF properties :)
@@ -464,7 +465,7 @@ declare function f:pmodel2Xtriples($rnode as node(),
 
         let $propertyIri := ($valueItemCase/@iri, $propertyIri)[1]
         let $propertyLangExpr := ($valueItemCase/@lang, $propertyLangExpr)[1]        
-        let $propertyType := ($valueItemCase/@type, $propertyType)[1]
+        let $propertyType := ($valueItemCase/@type, $propertyType, 'xs:string')[1]
         let $propertyMinOccurs := ()
         let $propertyMaxOccurs := ()
         
@@ -512,7 +513,9 @@ declare function f:pmodel2Xtriples($rnode as node(),
                         map{'taskType': 'hybridTriple',
                             'subjectIri': $subjectIri,
                             'propertyIri': $propertyIri,
-                            'rnode': $rnode,                            
+                            'rnode': $rnode,  
+                            'reverse': $reverse,
+                            'inversePropertyIri': $inversePropertyIri,
                             'nodeId': $nodeId,
                             'docUri': $docUri,
                             'rmodel': $objectRmodel
@@ -538,6 +541,7 @@ declare function f:pmodel2Xtriples($rnode as node(),
                                         'rnode': $rnode,
                                         'rmodel': $objectRmodel, 
                                         'iri': $objectIri,
+                                        'reverse': $reverse,
                                         'nodeId': $nodeId                                        
                                     }
                                 return ($objectIri, $rdescReq)
@@ -546,8 +550,12 @@ declare function f:pmodel2Xtriples($rnode as node(),
                         let $rdescReq := $objectIriAndRdescReq[.instance of map(*)]
                         return (
                             (: triples :)
-                            ($objectIri_dict, $objectIri_eval) ! 
-                                f:xtriple($subjectIri, $propertyIri, ., '#iri', (), $reverse),
+                            if ($inversePropertyIri) then
+                                ($objectIri_dict, $objectIri_eval) ! 
+                                    f:xtriplePair($subjectIri, $propertyIri, ., $inversePropertyIri)
+                            else
+                                ($objectIri_dict, $objectIri_eval) ! 
+                                    f:xtriple($subjectIri, $propertyIri, ., '#iri', (), $reverse),
                             (: request of a resource description :)
                             $rdescReq
                         )
@@ -861,8 +869,13 @@ declare function f:resolveHybridTriple($hybrid as map(*), $collectedDynContext a
         let $xtriple :=
             let $subjectIri := $hybrid?subjectIri
             let $propertyIri := $hybrid?propertyIri
+            let $inversePropertyIri := $hybrid?inversePropertyIri
+            let $reverse := $hybrid?reverse
             return
-                f:xtriple($subjectIri, $propertyIri, $objectIri, '#iri', ())
+                if ($inversePropertyIri) then
+                    f:xtriplePair($subjectIri, $propertyIri, $objectIri, $inversePropertyIri)
+                else
+                    f:xtriple($subjectIri, $propertyIri, $objectIri, '#iri', (), $reverse)
         let $rdescReq :=
             let $nodeId := $hybrid?nodeId
             return
