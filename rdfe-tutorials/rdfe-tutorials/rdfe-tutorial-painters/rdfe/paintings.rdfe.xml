@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<re:semanticMap  iri="http://example.com/semap/painters/"
+                 targetNamespace=""
+                 targetName="paintings"
+                 xmlns:re="http://www.rdfe.org/ns/model"
+                 xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <re:namespace iri="http://example.com/resource/artist/" prefix="artist"/>
+    <re:namespace iri="http://example.com/resource/painting/" prefix="painting"/>
+    <re:namespace iri="http://example.com/ontologies/culture/" prefix="cult"/>
+    <re:namespace iri="https://www.wikidata.org/wiki/" prefix="wiki"/>
+    
+    <re:resource
+       targetNodeName="painting"
+       assertedTargetNodes=""
+       iri="'wiki:' || @ID"
+       type="cult:opus"
+       modelID="painting">
+      <re:property iri="wiki:createdBy" value="'wiki:' || createrID" type="#iri"/>
+      <re:property iri="wiki:inception" value="date" type="xs:integer"/>
+      <re:property iri="wiki:title" value="title"/>      
+      <re:property iri="wiki:genre" value="genre"/>
+      <re:property iri="wiki:movement" value="movement"/>
+      <re:property iri="wiki:materialUsed" value="tokenize(materialsUsed, ',\s*')"/>
+      <re:property iri="wiki:depicts" value="tokenize(depicts, ',\s*')"/>
+    </re:resource>
+    
+</re:semanticMap>

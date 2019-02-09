@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<re:semanticMap  iri="http://example.com/semap/painters/"
+                 targetNamespace=""
+                 targetName="画家们"
+                 xmlns:re="http://www.rdfe.org/ns/model"
+                 xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <re:namespace iri="http://example.com/resource/artist/" prefix="artist"/>
+    <re:namespace iri="http://example.com/resource/opus/" prefix="painting"/>
+    <re:namespace iri="http://example.com/ontologies/culture/" prefix="cult"/>
+
+    <re:resource 
+          type="cult:artist"
+          iri="concat('artist:', 1 + count(preceding-sibling::画家))"                 
+          assertedTargetNodes="//画家" 
+          targetNodeName="画家"
+          modelID="artist">
+        <re:property iri="cult:lastName" value="姓名 / 姓氏"/>        
+        <re:property iri="cult:firstName" value="姓名 / 名字"/>
+        <re:property iri="cult:created" value="画作集 / 画作" type="#resource"/>        
+    </re:resource>
+    
+    <re:resource 
+          type="cult:painting" 
+          iri="concat('painting:', 1 + count(preceding::画作))"
+          assertedTargetNodes="//画作" 
+          targetNodeName="画作"         
+          modelID="painting">
+        <re:property iri="cult:inception" value="日期" type="xs:integer"/>
+        <re:property iri="cult:title" value="标题"/>   
+        <re:property iri="cult:createdBy" value="ancestor::画家" type="#resource"/>        
+    </re:resource>
+    
+</re:semanticMap>

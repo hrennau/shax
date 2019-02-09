@@ -1,0 +1,14 @@
+<painters>
+  <painter>
+    <name>
+      <familyName>Magritte</familyName>
+      <givenName>Rene</givenName>
+    </name>
+    <paintings>
+      <painting>
+        <title>Clairvoyance</title>
+        <date>1936</date>
+      </painting>
+    </paintings>
+  </painter>
+</painters>

@@ -35,7 +35,7 @@ declare namespace xsd="http://www.w3.org/2001/XMLSchema";
 declare namespace sc="http://www.rdfe.org/ns/model";
 
 declare variable $f:SWITCH_USE_GENERATE_ID := 0;
-declare variable $f:SWITCH_DEBUG_XQUERY_CDC := 1;
+declare variable $f:SWITCH_DEBUG_XQUERY_CDC := 0;
 
 (:~
  : Evaluates an XQuery expression.

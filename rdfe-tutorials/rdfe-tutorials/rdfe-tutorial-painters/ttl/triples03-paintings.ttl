@@ -1,0 +1,11 @@
+<z:errorReport xmlns:z="http://www.ttools.org/structure">
+Invalid call
+============
+
+PARAMETER_FACET_ERROR                   Parameter 'semap': item value 
+                                           ('rdfe/paintings.rdfe.03.xml') not facet-valid; 
+                                           facet=minDocCount, facet value=1; parameter value does not 
+                                           select any files.
+
+-------------------------------------
+</z:errorReport>

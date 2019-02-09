@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<re:semanticMap  iri="http://example.com/semap/painters/"
+                 targetNamespace=""
+                 targetName="painters"
+                 xmlns:re="http://www.rdfe.org/ns/model"
+                 xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <re:namespace iri="http://example.com/resource/artist/" prefix="artist"/>
+    <re:namespace iri="http://example.com/ontologies/culture/" prefix="cult"/>
+
+    <re:resource type="cult:artist"
+                 iri="concat('artist:', 1 + count(preceding-sibling::painter))"                 
+                 assertedTargetNodes="//painter" 
+                 targetNodeName="painter"
+                 modelID="artist">
+        <re:property iri="cult:lastName" value="name/familyName"/>        
+        <re:property iri="cult:firstName" value="name/givenName"/>
+    </re:resource>
+</re:semanticMap>

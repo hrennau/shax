@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<re:semanticMap  iri="http://example.com/semap/painters/"
+                 targetNamespace=""
+                 targetName="painters"
+                 xmlns:re="http://www.rdfe.org/ns/model"
+                 xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <re:import href="paintings.rdfe.xml"/>
+    
+    <re:namespace iri="http://example.com/resource/artist/" prefix="artist"/>
+    <re:namespace iri="http://example.com/ontologies/culture/" prefix="cult"/>
+    <re:namespace iri="https://www.wikidata.org/wiki/" prefix="wikidata"/>
+    
+    <re:context>
+        <re:var name="uriPaintings" value="'paintings-catalog.xml'"/>
+        <re:var name="docPaintings" value="doc(resolve-uri($uriPaintings, base-uri()))"/>
+        <re:fun name="getPainting" params="title, date" as="element(painting)"
+                code="$docPaintings//painting [title = $title] [date = $date]"/>        
+    </re:context>
+
+    <re:resource 
+          type="cult:artist"
+          iri="concat('artist:', 1 + count(preceding-sibling::painter))"                 
+          assertedTargetNodes="//painter" 
+          targetNodeName="painter"
+          modelID="artist">
+        <re:property iri="cult:lastName" value="name/familyName"/>        
+        <re:property iri="cult:firstName" value="name/givenName"/>
+        <re:property iri="cult:created" value="paintings/painting/$getPainting(title, date)" 
+                     type="#resource" 
+                     inverseIri="cult:createdBy"/>        
+    </re:resource>
+    
+</re:semanticMap>

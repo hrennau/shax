@@ -1,0 +1,15 @@
+@prefix artist: <http://example.com/resource/artist/> .
+@prefix cult: <http://example.com/ontologies/culture/> .
+@prefix painting: <http://example.com/resource/painting/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfe: <http://www.rdfe.org/ns/model#> .
+@prefix rdfee: <http://www.rdfe.org/ns/errors#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xs: <http://www.w3.org/2001/XMLSchema#> .
+ 
+artist:1 rdf:type cult:artist ;
+         cult:lastName "Magritte" ;
+         cult:firstName "Rene" .
+painting:1 rdf:type cult:painting ;
+           cult:inception 1936 ;
+           cult:title "Clairvoyance" .

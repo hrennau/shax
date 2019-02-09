@@ -87,8 +87,9 @@ declare function f:rdfe($docs as element()*,
     let $rnodeDict := f:getRnodeDict($semaps, $docs, $collectedDynContext)  
     let $_INFO := trace(map:keys($rnodeDict) => count(), 'RNODE dict constructed, #entries: ')  
     let $namespaces := f:semapNamespaceMap($semaps)
-
+(:
     let $DUMMY := for $semap at $pos in $semaps return file:write(concat('DEBUG_SEMAP-', $pos, '.xml'), $semap)
+:)    
 (:
     let $DUMMY := trace($semaps/base-uri(.), 'SEM_BASE_URIS: ')
     let $DUMMY := trace($docs/base-uri(.), 'DOC_BASE_URIS: ')

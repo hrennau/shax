@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<paintings>
+    <painting ID="Q3506878">
+        <createrID>Q7836</createrID>        
+        <title>Clairvoyance</title>
+        <date>1936</date>
+        <movement>Surrealism</movement>
+        <genre>self-portrait</genre>
+        <materialsUsed>oil paint, canvas</materialsUsed>
+        <collection>private collection</collection>
+        <depicts>egg, table, easel, bird, palette, paint brush, tablecloth, chair, man</depicts>
+    </painting>
+</paintings>
