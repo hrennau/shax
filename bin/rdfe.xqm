@@ -98,6 +98,7 @@ declare function f:rdfe($docs as element()*,
     let $DUMMY := file:write('DEBUG_RNODE_DICT.xml', f:DEBUG_rnodeDict($rnodeDict))
     let $DUMMY := file:write('DEBUG_COLLECTED_DYN_CONTEXT.xml', f:DEBUG_collectedSemapDynContext($collectedDynContext))
 :)    
+
     let $xtriplesAndTripleReqs :=
         for $key at $pos in map:keys($rnodeDict)
         return if ($pos lt $r1 or $pos gt $r2) then () else        
@@ -482,7 +483,6 @@ declare function f:pmodel2Xtriples($rnode as node(),
                          if (not($valueItemCase)) then () else
                             map{$ref:CLARC_PREFIX_RDFE || 'valueItem': $item},
                          $semap, $rnode)
-           
         return
             (: process atomic item :)
             if ($propertyType ne '#resource' or $propertyLangExpr or $item instance of xs:anyAtomicType) then

@@ -450,7 +450,7 @@ declare function f:writeErrorTriples($errorDescriptors as map(*)*)
 declare function f:DEBUG_collectedSemapDynContext($collectedDynContext as map(*))
         as element() {
     <collectedDynContext>{
-        for $docUri in map:keys($collectedDynContext)
+        for $docUri in map:keys($collectedDynContext)[string()]
         let $docMap := $collectedDynContext($docUri)
         return
             <doc uri="{$docUri}">{
