@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<re:semanticMap  iri="http://example.com/semap/painters/"
+                 targetNamespace=""
+                 targetName="paintings"
+                 xmlns:re="http://www.rdfe.org/ns/model"
+                 xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <re:namespace iri="http://example.com/resource/artist/" prefix="artist"/>
+    <re:namespace iri="http://example.com/resource/opus/" prefix="painting"/>
+    <re:namespace iri="http://example.com/ontologies/culture/" prefix="cult"/>
+
+    <re:resource 
+          type="cult:artist"
+          iri="concat('artist:', 1 + count(preceding-sibling::painter))"                 
+          assertedTargetNodes="//painter" 
+          targetNodeName="painter"
+          modelID="artist">
+        <re:property iri="cult:lastName" value="name/replace(., ',.*', '')"/>        
+        <re:property iri="cult:firstName" value="name/replace(., '.*?,\s*', '')"/>
+        <re:property iri="cult:created" value="ancestor::painting" type="#resource"/>        
+    </re:resource>
+    
+    <re:resource 
+          type="cult:painting" 
+          iri="concat('painting:', 1 + count(preceding-sibling::painting))"
+          assertedTargetNodes="//painting" 
+          targetNodeName="painting"         
+          modelID="painting">
+        <re:property iri="cult:inception" value="date" type="xs:integer"/>
+        <re:property iri="cult:title" value="title"/>   
+        <re:property iri="cult:createdBy" value="painter" type="#resource"/>        
+    </re:resource>
+    
+</re:semanticMap>
