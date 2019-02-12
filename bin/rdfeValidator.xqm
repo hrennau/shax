@@ -38,6 +38,10 @@ declare namespace re="http://www.rdfe.org/ns/model";
  :)
 declare function f:validateRdfe($semaps as element(re:semanticMap)+)
         as element(errors)? {
+    let $errors_xsd := f:validateRdfe_xsd($semaps)
+    return
+        if ($errors_xsd) then $errors_xsd else
+        
     let $expressions := (
         $semaps//re:context/re:var/(@value, text[matches(., '\S')]),
         $semaps//re:resource/(
@@ -80,6 +84,30 @@ declare function f:validateRdfe($semaps as element(re:semanticMap)+)
                 $errors
             }</errors>
             
+};
+
+(:~
+ : Validates semantic map documents against XSDs.
+ :
+ : @param semaps semantic map documents
+ : @return in case of errors a check report, empty sequence otherwise
+ :)
+declare function f:validateRdfe_xsd($semaps as element(re:semanticMap)+)
+        as element(errors)? {
+    let $xsd := $f:URI_XSD_RDFE ! doc(.)
+    let $mapReports :=
+        for $semap in $semaps
+        let $raw := validate:xsd-info($semap, $xsd)
+        return
+            if (empty($raw)) then ()
+            else
+                <xsdErrors docUri="{$semap/base-uri(.)}" countErrors="{count($raw)}">{
+                    $raw ! <msg>{.}</msg>
+                }</xsdErrors>
+    return
+        if (empty($mapReports)) then ()
+        else
+            <errors>{$mapReports}</errors>
 };
 
 declare function f:validateRdfe_augmentExpression($expr as node(),

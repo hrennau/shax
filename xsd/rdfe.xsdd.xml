@@ -1,0 +1,55 @@
+<x:xsdd x:tns="http://www.rdfe.org/ns/model" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:x="http://www.xsdr.org/ns/xsdd"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:t="http://www.rdfe.org/ns/model">
+    <x:xsdImports/>
+    <x:stypes>
+        <x:stype name="nameList" typeDesc="list: xs:Name"/>        
+        <x:stype name="zeroLengthStringType" typeDesc="xs:string: length=0"/>
+        <x:stype name="wildCardType" typeDesc="xs:string: (*)"/>
+        <x:stype name="typeTokenType" typeDesc="(#iri|#resource)"/>
+        <x:stype name="anyURIMatchType" typeDesc="union: xs:anyURI|t:zeroLengthStringType|t:wildCardType"/>
+        <x:stype name="NCNameMatchType" typeDesc="union: xs:NCName|t:wildCardType"/>
+        <x:stype name="typeNameOrTypeTokenType" typeDesc="union: xs:Name|t:typeTokenType"/>
+        <x:stype name="cardType" typeDesc="xs:string: #[?*+]|\d+(-(\d+)?)?|-\d+#"/>        
+        <x:stype name="paramsType" typeDesc="xs:string: #(\i\c*(\s*,\s*\i\c*)?)?#"/>
+    </x:stypes>    
+    <t:semanticMap iri="xs:anyURI"
+                   targetNamespace="$t:anyURIMatchType"
+                   targetName="$t:NCNameMatchType">
+        <t:targetAssertion expr="xs:string/?" x:occ="*">xs:string</t:targetAssertion>        
+        <t:import href="xs:anyURI" x:occ="*">#empty</t:import>
+        <t:namespace iri="xs:anyURI" prefix="xs:NCName" x:occ="*">#empty</t:namespace>   
+        <t:context x:occ="?">
+            <x:_choice_ x:occ="*">
+                <t:var name="xs:NCName" value="xs:string/?">xs:string</t:var>
+                <t:fun name="xs:NCName" params="$paramsType/?" as="xs:string/?" code="xs:string/?">xs:string</t:fun>
+            </x:_choice_>                
+        </t:context>
+        <t:resource modelID="xs:NCName" 
+                    assertedTargetNodes="xs:string/?" 
+                    iri="xs:string/?" 
+                    type="$t:nameList/?"
+                    targetNodeNamespace="$t:anyURIMatchType/?"
+                    targetNodeName="$t:NCNameMatchType/?"
+                    x:occ="*">
+            <t:targetNodeAssertion expr="xs:string/?" x:occ="*">xs:string</t:targetNodeAssertion>            
+            <t:property iri="xs:anyURI" 
+                        value="xs:string" 
+                        type="$typeNameOrTypeTokenType/?" 
+                        list="xs:boolean/?"
+                        objectModelID="xs:Name/?"
+                        card="$cardType/?"
+                        reverse="xs:boolean/?"
+                        lang="xs:string/?"
+                        x:occ="*">
+                <t:valueItemCase test="xs:string"
+                                 iri="xs:anyURI/?"
+                                 value="xs:string/?"
+                                 type="$typeNameOrTypeTokenType/?"
+                                 list="xs:boolean/?"
+                                 objectModelID="xs:Name/?"
+                                 lang="xs:string/?"
+                                 x:occ="*">#empty</t:valueItemCase>               
+            </t:property>        
+        </t:resource>  
+    </t:semanticMap>
+</x:xsdd>       
