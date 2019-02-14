@@ -1,11 +1,3 @@
-(:
- : -------------------------------------------------------------------------
- :
- : namespaceTools.xqm - functions handling namespaces
- :
- : -------------------------------------------------------------------------
- :)
-
 module namespace f="http://www.ttools.org/shax/ns/xquery-functions";
 import module namespace tt="http://www.ttools.org/xquery-functions" at 
     "tt/_request.xqm",

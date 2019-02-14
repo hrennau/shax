@@ -75,7 +75,7 @@ declare function f:rdfe($docs as element()*,
     let $r1 := $options/@r1/xs:integer(.)        
     let $r2 := $options/@r2/xs:integer(.)
     let $semaps := f:loadRdfe($semaps)
-    let $errors := f:validateRdfe($semaps)
+    let $errors := f:validateRdfe($semaps, $docs)
     return if ($errors) then $errors else
         
     let $semaps := f:augmentSemap($semaps)  
@@ -329,7 +329,7 @@ declare function f:getRnodeDict($semaps as element()+,
         let $iriExpr := $resource/@iri/string()        
         let $matchExpr := $resource/@assertedTargetNodes/replace(., '^([^/])', '//$1')
         
-        for $doc in $docs        
+        for $doc in $docs[f:semapComplementsDoc($semap, .)]        
         let $items := f:xqueryCDC($matchExpr, $resource, $collectedDynContext, $semap, $doc)
         let $nodes := $items[. instance of node()]
         return

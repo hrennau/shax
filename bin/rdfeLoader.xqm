@@ -53,13 +53,13 @@ declare function f:loadRdfe($docs as element(re:semanticMap)+)
 declare function f:loadRdfeRC($docs as element(re:semanticMap)+, 
                               $foundSoFar as xs:string*)
         as item()* {
-   let $DUMMY := trace(string-join($foundSoFar, ', '), 'FOUND_SO_FAR:           ')
+   (: let $DUMMY := trace(string-join($foundSoFar, ', '), 'FOUND_SO_FAR:           ') :)
    let $doc := head($docs)
-   let $uri := trace($doc/base-uri(.) ! f:normalizeUri(.) , 'INSPECT SEMAP, DOC URI: ')
+   let $uri := $doc/base-uri(.) ! f:normalizeUri(.)
    let $remainingDocs := tail($docs)
    return
      if (not($uri = $foundSoFar)) then (
-        let $uri := trace($doc/base-uri(.) ! f:normalizeUri(.) , 'LOAD SEMAP, DOC URI:    ') return
+        let $uri := trace($doc/base-uri(.) ! f:normalizeUri(.) , 'LOAD SEMAP: ') return
         $doc, 
         $uri,     
         let $newFoundSoFar := ($foundSoFar, $uri)

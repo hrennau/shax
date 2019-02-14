@@ -36,7 +36,8 @@ declare namespace re="http://www.rdfe.org/ns/model";
  : @param semaps semantic map documents
  : @return in case of errors a check report, empty sequence otherwise
  :)
-declare function f:validateRdfe($semaps as element(re:semanticMap)+)
+declare function f:validateRdfe($semaps as element(re:semanticMap)+,
+                                $docs as element()+)
         as element(errors)? {
     let $errors_xsd := f:validateRdfe_xsd($semaps)
     return
@@ -57,7 +58,7 @@ declare function f:validateRdfe($semaps as element(re:semanticMap)+)
         ),
         ()
     )
-    let $errors :=    
+    let $errors_invalid_expr :=    
         for $e in $expressions
         let $semap := $e/ancestor::re:semanticMap
         let $e_ := f:validateRdfe_augmentExpression($e, $semap)
@@ -77,12 +78,21 @@ declare function f:validateRdfe($semaps as element(re:semanticMap)+)
                     }</error>
             }
             )[self::error]
+    let $error_nomatch :=            
+        if (some $doc in $docs, $semap in $semaps satisfies f:semapComplementsDoc($semap, $doc))
+        then () else
+            <error code="DOCS_NOT_TARGETS_OF_SEMAPS">{
+                <errorDetails 
+                      description="The input documents do not meet target constraints of input semantic maps."/>,
+                <tip>Please check the target constraints: 
+                semanticMap/(@targetName, @targetNamespace, @targetAssertion, targetAssertion)</tip> 
+             }</error>
+    let $errors := 
+        ($errors_invalid_expr, $error_nomatch)             
     return
         if (empty($errors)) then ()
         else
-            <errors count="{count($errors)}">{
-                $errors
-            }</errors>
+            <errors count="{count($errors)}">{$errors}</errors>
             
 };
 
