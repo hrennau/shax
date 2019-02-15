@@ -267,6 +267,7 @@ declare function f:editXtriples($xtriples as element(shax:triples), $options as 
  :)
 declare function f:xtriples2Triples($xtriples as element(shax:triples))
         as xs:string {
+    let $_SUBJECT_ON_SEPERATE_LINE := 1        
     let $_INFO := trace(count($xtriples), 'Map xtriples -> triples, #')        
     let $prefixes := (
         $xtriples/shax:nsmap/shax:ns/concat('@prefix ', @prefix, ': <', @uri, '> .'),
@@ -277,12 +278,15 @@ declare function f:xtriples2Triples($xtriples as element(shax:triples))
         for $xtriple at $pos in $xtriples/shax:triple
         let $_INFO := if ($pos mod 10000) then () else trace($pos, 'xtriple->triple, #')
         group by $subject := $xtriple/@s
-        let $indent := string-join(for $i in 1 to string-length($subject) return ' ', '')
+        let $indent := 
+            if ($_SUBJECT_ON_SEPERATE_LINE) then '    '
+            else string-join(for $i in 1 to string-length($subject) return ' ', '')
         order by $subject
         return (
+            if ($_SUBJECT_ON_SEPERATE_LINE) then $subject else (),
             for $t at $pos in $xtriple
             let $s :=
-                if ($pos eq 1) then $subject
+                if ($pos eq 1 and not($_SUBJECT_ON_SEPERATE_LINE)) then $subject
                 else $indent
             let $delimit := if ($pos eq count($xtriple)) then '.' else ';'    
             (: order by if (starts-with($t/@p, 'rdf:')) then 'aaa' else replace($t/@p, '.+:', ''), replace($t/@pm, ':.*', '') :)   

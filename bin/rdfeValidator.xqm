@@ -44,6 +44,8 @@ declare function f:validateRdfe($semaps as element(re:semanticMap)+,
         if ($errors_xsd) then $errors_xsd else
         
     let $expressions := (
+        $semaps/@targetAssertion,
+        $semaps/re:targetAssertion/(@expr, text())[string()][1],
         $semaps//re:context/re:var/(@value, text[matches(., '\S')]),
         $semaps//re:resource/(
             @assertedTargetNodes[string(.)],
@@ -83,7 +85,7 @@ declare function f:validateRdfe($semaps as element(re:semanticMap)+,
         then () else
             <error code="DOCS_NOT_TARGETS_OF_SEMAPS">{
                 <errorDetails 
-                      description="The input documents do not meet target constraints of input semantic maps."/>,
+                      description="No input documents found which meet the target constraint of a semantic map."/>,
                 <tip>Please check the target constraints: 
                 semanticMap/(@targetName, @targetNamespace, @targetAssertion, targetAssertion)</tip> 
              }</error>

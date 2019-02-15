@@ -40,7 +40,6 @@ declare namespace shax="http://shax.org/ns/model";
 declare namespace shaxerr="http://shax.org/ns/error";
 declare namespace nons="http://shax.org/ns/nonamespace";
 declare namespace xsd="http://www.w3.org/2001/XMLSchema";
-declare namespace sc="http://www.rdfe.org/ns/model";
 declare namespace re="http://www.rdfe.org/ns/model";
 declare namespace rf="http://www.rdfe.org/ns/xquery-functions";
 
@@ -207,7 +206,7 @@ declare function f:semapNamespaceMap($semaps as element()+)
         let $iri := $ref:BUILTIN_NAMESPACE_BINDINGS($prefix)
         return <shax:ns uri="{$iri}" prefix="{$prefix}"/>
         ,
-        for $ns in $semaps/sc:namespace[not(@prefix = $builtinPrefixes)]
+        for $ns in $semaps/re:namespace[not(@prefix = $builtinPrefixes)]
         group by $uri := $ns/@iri
         let $prefix := $ns[1]/@prefix
         return <shax:ns uri="{$uri}" prefix="{$prefix}"/> 
@@ -215,8 +214,9 @@ declare function f:semapNamespaceMap($semaps as element()+)
 };
 
 (:~
- : Creates a document providing the dynamic context for each combination
- : of document URI and IRI of complementing semap. 
+ : Creates a map providing a distinct evaluation context for each combination
+ : of document URI and semap IRI. For each document, only those semantic
+ : maps are considered which have a target constraint satisfied by the document.
  :
  : When there is not yet a current collected context, the documents
  : ($docs) are also stored in the map, using the empty string as keys.
@@ -235,30 +235,29 @@ declare function f:getCollectedSemapDynContext($semaps as element()+,
                                                $docs as element()+, 
                                                $currentCollectedContext as map(*)?)
         as map(*)? {
-    let $newCollectedContext :=
-    
-    map:merge((   
-        if (exists($currentCollectedContext)) then () else map:entry('', $docs),
-        for $doc at $docnr in $docs
-        let $docUri := $doc/base-uri(.)
-        let $contextEntries :=
-            map:merge(
-                for $semap in $semaps
-                let $semapIri := i:semapIriForNode($semap)
-                let $dynContext := f:getSemapDynContext($semap, $doc, $docs)
-                where f:semapComplementsDoc($semap, $doc)
-                return
-                    map:entry($semapIri, $dynContext)
-            )
-        return
-            (: if (map:size($contextEntries) = 0) then ()
-            else :) 
-            map:entry($docUri, $contextEntries)
-    ))
+    let $newCollectedContext :=    
+        map:merge((   
+            (: the set of initial input documents is stored with key '' :)
+            if (exists($currentCollectedContext)) then () else map:entry('', $docs),
+        
+            for $doc in $docs
+            let $docUri := $doc/base-uri(.)
+            let $contextEntries :=
+                map:merge(
+                    for $semap in $semaps
+                    let $semapIri := i:semapIriForNode($semap)
+                    let $dynContext := f:getSemapDynContext($semap, $doc, $docs)
+                    where f:semapComplementsDoc($semap, $doc)
+                    return
+                        (: store context, using semap IRI as key :)
+                        map:entry($semapIri, $dynContext)
+                )
+            return
+                map:entry($docUri, $contextEntries)
+        ))
     
     return
-        if (exists($currentCollectedContext)) then map:merge(($newCollectedContext, $currentCollectedContext))
-        else $newCollectedContext
+        map:merge(($newCollectedContext, $currentCollectedContext))
 };
 
 (:~
@@ -270,7 +269,7 @@ declare function f:getSemapDynContext($semap as element(),
                                       $docs as element()+)
         as map(*)? {
     let $context := map{}
-    let $contextConstructors := $semap//sc:context/*
+    let $contextConstructors := $semap//re:context/*
     return 
         if (empty($contextConstructors)) then $context
         else f:getSemapDynContextRC($context, $contextConstructors, $doc, $docs)
@@ -324,7 +323,7 @@ declare function f:getRnodeDict($semaps as element()+,
         as map(*) {
     map:merge(        
         for $semap in $semaps
-        for $resource in $semap//sc:resource[@assertedTargetNodes]
+        for $resource in $semap//re:resource[@assertedTargetNodes]
         let $rmodelId := $resource/@modelID
         let $iriExpr := $resource/@iri/string()        
         let $matchExpr := $resource/@assertedTargetNodes/replace(., '^([^/])', '//$1')
@@ -399,7 +398,7 @@ declare function f:constructResource($nodeId as xs:string,
         else ()            
     (: let $DUMMY := trace($aggregateQueryResult, 'AGG_QUERY_RESULT: ') :)
     
-    let $xtriples1AndPendingXtriples := $rmodel/sc:property ! 
+    let $xtriples1AndPendingXtriples := $rmodel/re:property ! 
         f:pmodel2Xtriples($rnode, ., $rmodelId, $subjectIri, (), $rnodeDict, $semaps, $collectedDynContext, $aggregateQueryResult)
     let $pendingXtriples := $xtriples1AndPendingXtriples[. instance of map(*) or . instance of array(*)]
     let $xtriples := $xtriples1AndPendingXtriples[. instance of node()]
@@ -425,7 +424,7 @@ declare function f:constructResource($nodeId as xs:string,
  :    not found in the resource dictionary (if any)
  :)
 declare function f:pmodel2Xtriples($rnode as node(),
-                                   $pmodel as element(sc:property),
+                                   $pmodel as element(re:property),
                                    $rmodelId as xs:string,
                                    $subjectIri as xs:string, 
                                    $defaultPropertyValue as item()?, 
@@ -463,7 +462,7 @@ declare function f:pmodel2Xtriples($rnode as node(),
     let $xtriplesAndPendingTriples :=
         for $item in $valueItems
         let $valueItemCase := 
-            f:findMatchingValueItemCase($pmodel/sc:valueItemCase, $item, $collectedDynContext, $semap, $rnode)
+            f:findMatchingValueItemCase($pmodel/re:valueItemCase, $item, $collectedDynContext, $semap, $rnode)
 
         let $propertyIri := ($valueItemCase/@iri, $propertyIri)[1]
         let $propertyLangExpr := ($valueItemCase/@lang, $propertyLangExpr)[1]        
@@ -624,12 +623,12 @@ declare function f:pmodel2Xtriples($rnode as node(),
     )                
 };    
 
-declare function f:findMatchingValueItemCase($valueItemCases as element(sc:valueItemCase)*,
+declare function f:findMatchingValueItemCase($valueItemCases as element(re:valueItemCase)*,
                                              $item as item(),
                                              $collectedDynContext as map(*), 
                                              $semap as element(), 
                                              $rnode as node()) 
-        as element(sc:valueItemCase)? {
+        as element(re:valueItemCase)? {
     if (empty($valueItemCases)) then () else
     
     let $head := head($valueItemCases)

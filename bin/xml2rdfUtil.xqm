@@ -32,7 +32,7 @@ declare namespace shax="http://shax.org/ns/model";
 declare namespace shaxerr="http://shax.org/ns/error";
 declare namespace nons="http://shax.org/ns/nonamespace";
 declare namespace xsd="http://www.w3.org/2001/XMLSchema";
-declare namespace sc="http://www.rdfe.org/ns/model";
+declare namespace re="http://www.rdfe.org/ns/model";
 
 declare variable $f:SWITCH_USE_GENERATE_ID := 0;
 declare variable $f:SWITCH_DEBUG_XQUERY_CDC := 0;
@@ -131,8 +131,10 @@ declare function f:xquery($expr as xs:string,
 };
 
 (:~
- : Updates a dynamic context by replacing the binding of the context item with
- : a new value.
+ : Updates a dynamic context by setting the context item and further values.
+ : Further values are:
+ : - self = context Item
+ : - docs = the set of all documents
  :
  : @param dynContext a map of variable bindings and/or function item bindings
  : @param contextItem an item to be used as context item
@@ -212,7 +214,7 @@ declare function f:semapIriForNode($node as node())
  : Returns for a given semap node the semap element.
  :) 
 declare function f:semapForNode($node as node())
-        as element(sc:semanticMap) {
+        as element(re:semanticMap) {
     $node/ancestor-or-self::*[last()]        
 };
 
@@ -314,7 +316,7 @@ declare function f:getNodeId($node as node())
  :)
 declare function f:getResourceIRIForRnode($rnode as node(), 
                                           $rmodel as element()?, 
-                                          $semaps as element(sc:semanticMap)*,
+                                          $semaps as element(re:semanticMap)*,
                                           $collectedDynContext as map(*))
         as xs:string? {
     let $rmodel :=
@@ -357,16 +359,16 @@ declare function f:getResourceIRIForRnode($rnode as node(),
  : @return the resource model
  :)
 declare function f:getResourceModelForModelID($idAtt as attribute()?, $semaps as element()+)
-        as element(sc:resource)? {
-    $idAtt/(let $id := . return $semaps//sc:resource[@modelID eq $id])
+        as element(re:resource)? {
+    $idAtt/(let $id := . return $semaps//re:resource[@modelID eq $id])
 };      
 
 
-declare function f:getResourceModelForRnode($rnode as node(), $semaps as element(sc:semanticMap)*)
+declare function f:getResourceModelForRnode($rnode as node(), $semaps as element(re:semanticMap)*)
         as element()? {
     let $rootElem := $rnode/ancestor-or-self::*[last()]
     let $mySemaps := $semaps[f:semapComplementsDoc(., $rootElem)]
-    let $myRmodels := $mySemaps//sc:resource[f:rmodelAppliesToNode(., $rnode)]
+    let $myRmodels := $mySemaps//re:resource[f:rmodelAppliesToNode(., $rnode)]
     let $errorMsg := if (count($myRmodels) le 1) then () else
         concat('Resource node targeted by multiple resource models; resource node name: ', 
                 local-name($rnode), '; rmodel IDs: ', string-join($myRmodels/@modelID, ', '),
@@ -391,6 +393,8 @@ declare function f:semapComplementsDoc($semap as element(), $doc as element())
     
     let $tns := $semap/@targetNamespace[string()] ! tokenize(.)
     let $tn := $semap/@targetName[string()] ! tokenize(.)
+    let $tassertions := $semap/(@targetAssertion, 
+                                re:targetAssertion/(@expr, text())[string()][1])
     let $tnsOk :=
         if (not($ns)) then
             if (empty($tns) or $tns = '#null') then true()
@@ -403,19 +407,22 @@ declare function f:semapComplementsDoc($semap as element(), $doc as element())
                 concat('^', ., '$')
             return
                 some $f in $tnsFilters satisfies matches($ns, $f, 'i')
-    return
-        if (not($tnsOk)) then false() 
+    let $tnOk :=
+        if (empty($tn)) then true()
         else
-            if (empty($tn)) then true()
-            else
-                let $tnFilters :=
-                    $tn !
-                    replace(., '\*', '.*') !
-                    replace(., '\?', '.') !
-                    concat('^', ., '$')
-                return
-                    some $f in $tnFilters satisfies matches($name, $f, 'i')
-                
+            let $tnFilters :=
+                $tn !
+                replace(., '\*', '.*') !
+                replace(., '\?', '.') !
+                concat('^', ., '$')
+            return
+                some $f in $tnFilters satisfies matches($name, $f, 'i')
+    let $tassOk :=
+        every $tass in $tassertions satisfies
+            let $expr := concat('boolean(', $tass, ')')
+            let $namespaceContext := $tass/ancestor-or-self::*[1]
+            return f:xquery($expr, $namespaceContext, (), (), $doc)
+    return $tnsOk and $tnOk and $tassOk            
 };        
 
 (:~
@@ -425,7 +432,7 @@ declare function f:semapComplementsDoc($semap as element(), $doc as element())
  : @param rnode the XML node
  : @return true or false
  :)
-declare function f:rmodelAppliesToNode($rmodel as element(sc:resource), $rnode as node())
+declare function f:rmodelAppliesToNode($rmodel as element(re:resource), $rnode as node())
         as xs:boolean {
     not($rmodel/@targetNodeNamespace ne namespace-uri($rnode)) and
     not($rmodel/@targetNodeName ne local-name($rnode))
