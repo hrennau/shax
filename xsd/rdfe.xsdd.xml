@@ -13,8 +13,9 @@
         <x:stype name="paramsType" typeDesc="xs:string: #(\i\c*(\s*,\s*\i\c*)?)?#"/>
     </x:stypes>    
     <t:semanticMap iri="xs:anyURI"
-                   targetNamespace="$t:anyURIMatchType"
-                   targetName="$t:NCNameMatchType">
+                   targetNamespace="xs:string/?"
+                   targetName="xs:string/?"
+                   targetAssertion="xs:string/?">
         <t:targetAssertion expr="xs:string/?" x:occ="*">xs:string</t:targetAssertion>        
         <t:import href="xs:anyURI" x:occ="*">#empty</t:import>
         <t:namespace iri="xs:anyURI" prefix="xs:NCName" x:occ="*">#empty</t:namespace>   
@@ -28,8 +29,9 @@
                     assertedTargetNodes="xs:string/?" 
                     iri="xs:string/?" 
                     type="$t:nameList/?"
-                    targetNodeNamespace="$t:anyURIMatchType/?"
-                    targetNodeName="$t:NCNameMatchType/?"
+                    targetNodeNamespace="xs:string/?"
+                    targetNodeName="xs:string/?"
+                    targetNodeAssertion="xs:string/?"
                     x:occ="*">
             <t:targetNodeAssertion expr="xs:string/?" x:occ="*">xs:string</t:targetNodeAssertion>            
             <t:property iri="xs:anyURI" 

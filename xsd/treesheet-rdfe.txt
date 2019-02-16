@@ -1,0 +1,51 @@
+Element: semanticMap   namespace: http://www.rdfe.org/ns/model
+===================================================
+semanticMap
+. @iri . ... ... ... ... ... ty: xs:anyURI
+. @targetNamespace?  ... ... ty: xs:string
+. @targetName? . ... ... ... ty: xs:string
+. @targetAssertion?  ... ... ty: xs:string
+. targetAssertion* . ... ... ty: xs:string
+. . @expr? . ... ... ... ... ty: xs:string
+. import*
+. . @href .. ... ... ... ... ty: xs:anyURI
+. namespace*
+. . @iri ... ... ... ... ... ty: xs:anyURI
+. . @prefix  ... ... ... ... ty: xs:NCName
+. context?
+. . _choice_*
+. . 1 var .. ... ... ... ... ty: xs:string
+. . 1 . @name .. ... ... ... ty: xs:NCName
+. . 1 . @value?  ... ... ... ty: xs:string
+. . 2 fun .. ... ... ... ... ty: xs:string
+. . 2 . @name .. ... ... ... ty: xs:NCName
+. . 2 . @params? ... ... ... ty: xs:string: pattern=#(\i\c*(\s*,\s*\i\c*)?)?#
+. . 2 . @as? ... ... ... ... ty: xs:string
+. . 2 . @code? . ... ... ... ty: xs:string
+. resource*
+. . @modelID ... ... ... ... ty: xs:NCName
+. . @assertedTargetNodes? .. ty: xs:string
+. . @iri? .. ... ... ... ... ty: xs:string
+. . @type? . ... ... ... ... ty: List(xs:Name)
+. . @targetNodeNamespace? .. ty: xs:string
+. . @targetNodeName? ... ... ty: xs:string
+. . @targetNodeAssertion? .. ty: xs:string
+. . targetNodeAssertion* ... ty: xs:string
+. . . @expr? ... ... ... ... ty: xs:string
+. . property*
+. . . @iri . ... ... ... ... ty: xs:anyURI
+. . . @value ... ... ... ... ty: xs:string
+. . . @type? ... ... ... ... ty: Union({xs:Name}, {xs:string: enum=(#iri|#resource)})
+. . . @list? ... ... ... ... ty: xs:boolean
+. . . @objectModelID? .. ... ty: xs:Name
+. . . @card? ... ... ... ... ty: xs:string: pattern=#[?*+]|\d+(-(\d+)?)?|-\d+#
+. . . @reverse?  ... ... ... ty: xs:boolean
+. . . @lang? ... ... ... ... ty: xs:string
+. . . valueItemCase*
+. . . . @test .. ... ... ... ty: xs:string
+. . . . @iri? .. ... ... ... ty: xs:anyURI
+. . . . @value?  ... ... ... ty: xs:string
+. . . . @type? . ... ... ... ty: Union({xs:Name}, {xs:string: enum=(#iri|#resource)})
+. . . . @list? . ... ... ... ty: xs:boolean
+. . . . @objectModelID?  ... ty: xs:Name
+. . . . @lang? . ... ... ... ty: xs:string

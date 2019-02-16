@@ -21,6 +21,7 @@ import module namespace ref="http://www.rdfe.org/ns/xquery-functions" at
 
 import module namespace i="http://www.ttools.org/shax/ns/xquery-functions" at
     "constants.xqm",
+    "rdfeTargetMatcher.xqm",
     "util.xqm"
 ;
 
@@ -367,7 +368,7 @@ declare function f:getResourceModelForModelID($idAtt as attribute()?, $semaps as
 declare function f:getResourceModelForRnode($rnode as node(), $semaps as element(re:semanticMap)*)
         as element()? {
     let $rootElem := $rnode/ancestor-or-self::*[last()]
-    let $mySemaps := $semaps[f:semapComplementsDoc(., $rootElem)]
+    let $mySemaps := $semaps[f:semapAppliesToDocument(., $rootElem)]
     let $myRmodels := $mySemaps//re:resource[f:rmodelAppliesToNode(., $rnode)]
     let $errorMsg := if (count($myRmodels) le 1) then () else
         concat('Resource node targeted by multiple resource models; resource node name: ', 
@@ -379,6 +380,7 @@ declare function f:getResourceModelForRnode($rnode as node(), $semaps as element
         else $myRmodels
 };
 
+(:
 (:~
  : Determines whether a given semap complements a given document.
  :
@@ -424,19 +426,7 @@ declare function f:semapComplementsDoc($semap as element(), $doc as element())
             return f:xquery($expr, $namespaceContext, (), (), $doc)
     return $tnsOk and $tnOk and $tassOk            
 };        
-
-(:~
- : Returns true if a given resource model can be applied to a given XML node.
- :
- : @param rmodel the resource model
- : @param rnode the XML node
- : @return true or false
- :)
-declare function f:rmodelAppliesToNode($rmodel as element(re:resource), $rnode as node())
-        as xs:boolean {
-    not($rmodel/@targetNodeNamespace ne namespace-uri($rnode)) and
-    not($rmodel/@targetNodeName ne local-name($rnode))
-};
+:)
 
 declare function f:writeErrorTriples($errorDescriptors as map(*)*)
         as element(shax:triple)* {

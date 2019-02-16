@@ -21,7 +21,7 @@ import module namespace ref="http://www.rdfe.org/ns/xquery-functions" at
 
 import module namespace i="http://www.ttools.org/shax/ns/xquery-functions" at
     "constants.xqm",
-    "rdfeLoaderOld.xqm",
+    "rdfeTargetMatcher.xqm",
     "shaclWriter.xqm",
     "util.xqm";
     
@@ -81,7 +81,7 @@ declare function f:validateRdfe($semaps as element(re:semanticMap)+,
             }
             )[self::error]
     let $error_nomatch :=            
-        if (some $doc in $docs, $semap in $semaps satisfies f:semapComplementsDoc($semap, $doc))
+        if (some $doc in $docs, $semap in $semaps satisfies f:semapAppliesToDocument($semap, $doc))
         then () else
             <error code="DOCS_NOT_TARGETS_OF_SEMAPS">{
                 <errorDetails 

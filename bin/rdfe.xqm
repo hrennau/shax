@@ -27,6 +27,7 @@ import module namespace i="http://www.ttools.org/shax/ns/xquery-functions" at
     "shaclWriter.xqm",
     "shaxLoader.xqm",
     "schemaLoader.xqm",
+    "rdfeTargetMatcher.xqm",
     "targetNamespaceTools.xqm",
     "typeGlobalizer.xqm",
     "util.xqm",
@@ -247,7 +248,7 @@ declare function f:getCollectedSemapDynContext($semaps as element()+,
                     for $semap in $semaps
                     let $semapIri := i:semapIriForNode($semap)
                     let $dynContext := f:getSemapDynContext($semap, $doc, $docs)
-                    where f:semapComplementsDoc($semap, $doc)
+                    where f:semapAppliesToDocument($semap, $doc)
                     return
                         (: store context, using semap IRI as key :)
                         map:entry($semapIri, $dynContext)
@@ -328,7 +329,7 @@ declare function f:getRnodeDict($semaps as element()+,
         let $iriExpr := $resource/@iri/string()        
         let $matchExpr := $resource/@assertedTargetNodes/replace(., '^([^/])', '//$1')
         
-        for $doc in $docs[f:semapComplementsDoc($semap, .)]        
+        for $doc in $docs[f:semapAppliesToDocument($semap, .)]        
         let $items := f:xqueryCDC($matchExpr, $resource, $collectedDynContext, $semap, $doc)
         let $nodes := $items[. instance of node()]
         return
