@@ -64,7 +64,8 @@ declare variable $f:SWITCH_USE_AGGREGATE_QUERY := 0;
  : @return RDF triples
  :) 
 declare function f:rdfe($docs as element()*, 
-                        $semaps as element()+,
+                        $semaps as element(re:semanticMap)*,
+                        $sepro as element(re:semanticProfile)?,
                         $format as xs:string, 
                         $options as element(options))
         as item()* {
@@ -74,7 +75,11 @@ declare function f:rdfe($docs as element()*,
 :)    
     let $r1 := $options/@r1/xs:integer(.)        
     let $r2 := $options/@r2/xs:integer(.)
-    let $semaps := f:loadRdfe($semaps)
+    let $semapsAndSepro := f:loadRdfe($semaps, $sepro)
+    let $DUMMY := trace(count($semapsAndSepro) , 'COUNT_SEMAPS_SEPRO: ')
+    let $sepro := $semapsAndSepro[self::re:semanticProfile]
+    let $semaps := $semapsAndSepro[self::re:semanticMap]
+    
     let $errors := f:validateRdfe($semaps, $docs)
     return if ($errors) then $errors else
         

@@ -36,11 +36,12 @@ declare namespace re="http://www.rdfe.org/ns/model";
  : @param docs the rdfe documents to be loaded
  : @return a set of rdfe documents
  :)
-declare function f:loadRdfe($docs as element(re:semanticMap)+)
-        as element(re:semanticMap)+ {
-    let $old := false() return if ($old) then f:expandRdfes_old($docs) else
+declare function f:loadRdfe($semaps as element(re:semanticMap)*,
+                            $sepro as element(re:semanticProfile)?)
+        as element()+ {
+    let $old := false() return if ($old) then f:expandRdfes_old($semaps) else
     
-    let $docsExpanded := f:loadRdfeRC($docs, ())[. instance of node()]
+    let $docsExpanded := f:loadRdfeRC(($semaps, $sepro), ())[. instance of node()]
     let $errors := tt:extractErrors($docsExpanded)
     return if ($errors) then tt:wrapErrors($errors) else
             
@@ -50,7 +51,7 @@ declare function f:loadRdfe($docs as element(re:semanticMap)+)
 (:~
  : Recursive helper function of `f:expandRdfes`.
  :)
-declare function f:loadRdfeRC($docs as element(re:semanticMap)+, 
+declare function f:loadRdfeRC($docs as element()+, 
                               $foundSoFar as xs:string*)
         as item()* {
    (: let $DUMMY := trace(string-join($foundSoFar, ', '), 'FOUND_SO_FAR:           ') :)
@@ -63,7 +64,7 @@ declare function f:loadRdfeRC($docs as element(re:semanticMap)+,
         $doc, 
         $uri,     
         let $newFoundSoFar := ($foundSoFar, $uri)
-        let $importedDocs := $doc/re:import/@href/doc(resolve-uri(., base-uri(..)))/*
+        let $importedDocs := $doc/(re:import, re:importSemanticMaps)/@href/doc(resolve-uri(., base-uri(..)))/*
                               [not(base-uri(.) ! f:normalizeUri(.) = $newFoundSoFar)]
         let $importedDocsExpanded := 
             if (not($importedDocs)) then () else f:loadRdfeRC($importedDocs, $newFoundSoFar)

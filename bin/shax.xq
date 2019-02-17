@@ -1,7 +1,7 @@
 (:
  : shax - 
  :
- : @version 2019-01-31T11:21:28.962+01:00 
+ : @version 2019-02-17T22:29:19.759+01:00 
  :)
 
 import module namespace tt="http://www.ttools.org/xquery-functions" at
@@ -110,13 +110,15 @@ declare variable $toolScheme :=
     <operation name="rdfe" type="item()" func="rdfeOp" mod="xml2rdf.xqm" namespace="http://www.ttools.org/shax/ns/xquery-functions">
       <param name="dox" type="docFOX+" fct_minDocCount="1" sep="SC"/>
       <param name="jox" type="jsonFOX*" fct_minDocCount="0" sep="SC"/>
-      <param name="semap" type="docFOX?" fct_minDocCount="1"/>
+      <param name="semap" type="docFOX?" fct_minDocCount="0" pgroup="semapSepro"/>
+      <param name="sepro" type="docFOX?" pgroup="semapSepro"/>
       <param name="r1" type="xs:integer?"/>
       <param name="r2" type="xs:integer?"/>
       <param name="blankNodes" type="xs:boolean?" default="false"/>
       <param name="format" type="xs:string?" fct_values="xmlaug, xtriples0, xtriples, triples" default="triples"/>
       <param name="nons" type="xs:string?"/>
       <param name="prefixNons" type="xs:string?"/>
+      <pgroup name="semapSepro" minOccurs="1"/>
     </operation>
     <operation name="xsd" type="item()*" func="xsdOp" mod="xsd.xqm" namespace="http://www.ttools.org/shax/ns/xquery-functions">
       <param name="shax" type="docFOX+" sep="SC" fct_minDocCount="1" pgroup="input"/>

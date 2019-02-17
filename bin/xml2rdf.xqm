@@ -11,13 +11,15 @@
       <operation name="rdfe" type="item()" func="rdfeOp">     
          <param name="dox" type="docFOX+" fct_minDocCount="1" sep="SC"/>    
          <param name="jox" type="jsonFOX*" fct_minDocCount="0" sep="SC"/>
-         <param name="semap" type="docFOX?" fct_minDocCount="1"/>
+         <param name="semap" type="docFOX?" fct_minDocCount="0" pgroup="semapSepro"/>
+         <param name="sepro" type="docFOX?" pgroup="semapSepro"/>
          <param name="r1" type="xs:integer?" />
          <param name="r2" type="xs:integer?" />
          <param name="blankNodes" type="xs:boolean?" default="false"/>
          <param name="format" type="xs:string?" fct_values="xmlaug, xtriples0, xtriples, triples" default="triples"/>
          <param name="nons" type="xs:string?"/>         
          <param name="prefixNons" type="xs:string?"/>
+         <pgroup name="semapSepro" minOccurs="1"/>
       </operation>
     </operations>  
 :)  
@@ -75,6 +77,7 @@ declare function f:rdfeOp($request as element())
     let $nons := tt:getParam($request, 'nons')
     let $prefixNons := tt:getParam($request, 'prefixNons')    
     let $semap := tt:getParam($request, 'semap')/*
+    let $sepro := tt:getParam($request, 'sepro')/*
     let $options :=
         <options>{
             $nons ! attribute nons {.},
@@ -83,7 +86,7 @@ declare function f:rdfeOp($request as element())
             $r2 ! attribute r2 {.}
         }</options>
     let $rdf := 
-        if ($semap) then f:rdfe($docs, $semap, $format, $options)
+        if ($semap, $sepro) then f:rdfe($docs, $semap, $sepro, $format, $options)
         else f:xml2rdf($docs, $useBlankNodes, $format, $options)
     return $rdf
 };   
