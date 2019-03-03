@@ -115,14 +115,14 @@ declare function f:expandShax($models as element()+)
         let $shapeNames := 
             $trans6//(shax:shape, shax:pshape)/@name/resolve-QName(., ..)
         return f:expandShax6RC($trans6, $shapeNames)
-   
-    let $DUMMY := file:write($i:DIR_DEBUG || 'DEBUG-trans1.xml', $trans1)   
-    let $DUMMY := file:write($i:DIR_DEBUG || 'DEBUG-trans2.xml', $trans2)   
-    let $DUMMY := file:write($i:DIR_DEBUG || 'DEBUG-trans3.xml', $trans3)   
-    let $DUMMY := file:write($i:DIR_DEBUG || 'DEBUG-trans4.xml', $trans4)    
-    let $DUMMY := file:write($i:DIR_DEBUG || 'DEBUG-trans5.xml', $trans5)    
-    let $DUMMY := file:write($i:DIR_DEBUG || 'DEBUG-trans6.xml', $trans6)   
-    let $DUMMY := file:write($i:DIR_DEBUG || 'DEBUG-trans7.xml', $trans7)    
+
+    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans1.xml', $trans1)   
+    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans2.xml', $trans2)   
+    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans3.xml', $trans3)   
+    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans4.xml', $trans4)    
+    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans5.xml', $trans5)    
+    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans6.xml', $trans6)   
+    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans7.xml', $trans7)    
     return $trans7
 };        
 
@@ -335,6 +335,10 @@ declare function f:expandShax3RC($n as node())
                         $elem
                     }</shax:shape>
             
+    case attribute(class) return (
+        $n,
+        $n[parent::shax:objectType]/attribute targetClass {.}
+    )
     default return $n            
 };        
 

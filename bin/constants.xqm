@@ -28,4 +28,5 @@ declare variable $f:QNAME_XSDTYPE_STRING as xs:QName := QName($f:URI_XSD, 'xs:st
 declare variable $f:QNAME_XSDTYPE_INTEGER as xs:QName := QName($f:URI_XSD, 'xs:integer');
 declare variable $f:QNAME_XSDTYPE_BOOLEAN as xs:QName := QName($f:URI_XSD, 'xs:boolean');
 declare variable $f:DIR_DEBUG := "debug/";
+declare variable $f:DEBUG_LEVEL as xs:integer := 1;
 

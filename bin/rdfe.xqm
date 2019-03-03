@@ -22,6 +22,7 @@ import module namespace ref="http://www.rdfe.org/ns/xquery-functions" at
 import module namespace i="http://www.ttools.org/shax/ns/xquery-functions" at
     "constants.xqm",
     "rdfeLoader.xqm",
+    "rdfeSepro.xqm",
     "rdfeValidator.xqm",
     "xml2rdfUtil.xqm",
     "shaclWriter.xqm",
@@ -77,10 +78,15 @@ declare function f:rdfe($docs as element()*,
     let $r2 := $options/@r2/xs:integer(.)
     let $semapsAndSepro := f:loadRdfe($semaps, $sepro)
     let $DUMMY := trace(count($semapsAndSepro) , 'COUNT_SEMAPS_SEPRO: ')
-    let $sepro := $semapsAndSepro[self::re:semanticProfile]
+    let $seproRaw := $semapsAndSepro[self::re:semanticProfile]
+    let $sepro := f:compileSemanticProfile($seproRaw)
     let $semaps := $semapsAndSepro[self::re:semanticMap]
-    
     let $errors := f:validateRdfe($semaps, $docs)
+    
+    let $semaps := 
+        if (not($sepro)) then $semaps
+        else f:applySemanticProfile($sepro, $semaps)
+    
     return if ($errors) then $errors else
         
     let $semaps := f:augmentSemap($semaps)  
@@ -92,6 +98,9 @@ declare function f:rdfe($docs as element()*,
     let $rnodeDict := f:getRnodeDict($semaps, $docs, $collectedDynContext)  
     let $_INFO := trace(map:keys($rnodeDict) => count(), 'RNODE dict constructed, #entries: ')  
     let $namespaces := f:semapNamespaceMap($semaps)
+    
+    let $DUMMY := file:write('DEBUG_SEPRO.xml', $sepro)
+    let $DUMMY := for $s at $pos in $semaps return file:write(concat('DEBUG_SEMAP', $pos, '.xml'), $s)
 (:
     let $DUMMY := for $semap at $pos in $semaps return file:write(concat('DEBUG_SEMAP-', $pos, '.xml'), $semap)
 :)    

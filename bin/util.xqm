@@ -298,3 +298,13 @@ declare function f:normalizeUri($uri as xs:string) {
         else
             replace($u, '^(file:/)(.+)', '$1c:/$2') 
 };
+
+declare function f:writeDebugXml($minDebugLevel as xs:integer,
+                                 $fileName as xs:string,
+                                 $xmlFile)
+        as empty-sequence() {
+    if ($minDebugLevel > $i:DEBUG_LEVEL) then () else
+        let $filePath := concat($i:DIR_DEBUG, '/', $fileName)
+        return file:write($filePath, $xmlFile)
+};        
+                                  

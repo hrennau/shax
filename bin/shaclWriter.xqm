@@ -73,8 +73,8 @@ declare function f:shaclFromShaxExpanded_topElements($shaxExpanded as element())
         else ()
     where $typeConstraint
     return (
-            (: concat('_e:_DocumentType', $pos), :)
-            concat('_e:_RootResource___', $property/@name/replace(., ':', '___')),
+            (: concat('e_:_DocumentType', $pos), :)
+            concat('e_:_RootResource___', $property/@name/replace(., ':', '___')),
             concat('    a sh:NodeShape ;', ''),
             concat('    sh:targetObjectsOf ', $property/@name, ' ;'),
             concat($typeConstraint, ' .'),
@@ -96,7 +96,7 @@ string-join((
 "@prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix shax: <http://shax.org/ns/model#> .
 @prefix nons: <http://shax.org/ns/nonamespace#> .
-@prefix _e: <http://shax.org/ns/model/element-equivalent#> .
+@prefix e_: <http://shax.org/ns/model/element-equivalent#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix xml: <http://www.w3.org/XML/1998/namespace#> .
 @prefix xs:  <http://www.w3.org/2001/XMLSchema#> .
