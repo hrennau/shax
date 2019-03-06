@@ -79,7 +79,7 @@ declare function f:rdfe($docs as element()*,
     let $semapsAndSepro := f:loadRdfe($semaps, $sepro)
     let $DUMMY := trace(count($semapsAndSepro) , 'COUNT_SEMAPS_SEPRO: ')
     let $seproRaw := $semapsAndSepro[self::re:semanticProfile]
-    let $sepro := f:compileSemanticProfile($seproRaw)
+    let $sepro := $seproRaw/f:compileSemanticProfile(.)
     let $semaps := $semapsAndSepro[self::re:semanticMap]
     let $errors := f:validateRdfe($semaps, $docs)
     

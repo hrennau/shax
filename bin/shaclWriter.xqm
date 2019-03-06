@@ -454,7 +454,7 @@ declare function f:serializeShaclxRC($n as node(),
             concat($prefix, 'sh:datatype ', $n/@iri)
             
         case element(stx:memberType) return
-            concat($prefix, $n/@iri)
+            concat($prefix, '[sh:datatype ', $n/@iri, ']')
             
         case element(stx:type) return
             concat($prefix, 'a ', $n/@iri)
