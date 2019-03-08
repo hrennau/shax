@@ -84,7 +84,7 @@ declare function f:expandShax($models as element()+)
         as element() {
         
     (: *** recursively expand all imports :)
-    let $trans1 := f:expandImports($models)
+    let $trans1 := f:loadShax($models)
     
     (: *** add @card attributes (making default values explicit) :)
     let $trans2 := f:expandShax1($trans1)        

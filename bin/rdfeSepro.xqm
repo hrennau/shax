@@ -18,7 +18,6 @@ import module namespace tt="http://www.ttools.org/xquery-functions" at
 
 import module namespace i="http://www.ttools.org/shax/ns/xquery-functions" at
     "constants.xqm",
-    "rdfeLoaderOld.xqm",
     "shaclWriter.xqm",
     "util.xqm";
     

@@ -132,7 +132,7 @@ declare function f:writeXsds($xsds as element(xs:schema)+,
  :)
 declare function f:shax2xsd($models as element()+)
         as item()+ {
-    let $models := f:expandImports($models)        
+    let $models := f:loadShax($models)        
     let $models := $models/f:addCardinalityAtts(.)  
     
     (: normalize namespace bindings :)

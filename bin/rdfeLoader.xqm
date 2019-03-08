@@ -19,7 +19,6 @@ import module namespace tt="http://www.ttools.org/xquery-functions" at
 
 import module namespace i="http://www.ttools.org/shax/ns/xquery-functions" at
     "constants.xqm",
-    "rdfeLoaderOld.xqm",
     "shaclWriter.xqm",
     "util.xqm";
     
@@ -39,8 +38,6 @@ declare namespace re="http://www.rdfe.org/ns/model";
 declare function f:loadRdfe($semaps as element(re:semanticMap)*,
                             $sepro as element(re:semanticProfile)?)
         as element()+ {
-    let $old := false() return if ($old) then f:expandRdfes_old($semaps) else
-    
     let $docsExpanded := f:loadRdfeRC(($semaps, $sepro), ())[. instance of node()]
     let $errors := tt:extractErrors($docsExpanded)
     return if ($errors) then tt:wrapErrors($errors) else

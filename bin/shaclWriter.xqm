@@ -18,7 +18,7 @@ import module namespace tt="http://www.ttools.org/xquery-functions" at
 
 import module namespace i="http://www.ttools.org/shax/ns/xquery-functions" at
     "constants.xqm",
-    "shaclWriter-deprecated.xqm",
+    "shaclWriterOld.xqm",
     "util.xqm";
     
 declare namespace z="http://www.ttools.org/shax/ns/structure";
