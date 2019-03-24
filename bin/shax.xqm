@@ -91,7 +91,7 @@ declare function f:expandShax($models as element()+)
     
     (: *** replace references to substitution group heads by choice groups :)
     let $trans3 :=
-        let $sgroups := f:sgroupsFromShax($trans2)
+        let $sgroups := trace( f:sgroupsFromShax($trans2) , 'SGROUPS: ')
         return
             if (empty(map:keys($sgroups))) then $trans2
             else f:expandShax2RC($trans2, $sgroups)
@@ -100,7 +100,8 @@ declare function f:expandShax($models as element()+)
            pgroup     => shape
            choice     => xone 
            annotation => () :)   
-    let $trans4 := f:expandShax3RC($trans3)
+    let $trans4 := f:expandShax3($trans3)
+    let $trans4b := f:expandShax31($trans3)
     
     (: *** property => pshape :)
     let $trans5 := f:expandShax4RC($trans4)
@@ -139,20 +140,22 @@ declare function f:expandShax($models as element()+)
 declare function f:sgroupsFromShax($models as element(shax:models))
         as map(xs:QName, xs:QName+) {
     let $elems := $models/shax:model/shax:property
-    let $elemsSGM := $elems[@substitutes]
+    return if (empty($elems/@substitutes)) then map{} else
+    
     let $foldFunction :=
         function($accum as map(xs:QName, xs:QName+), $item as element(shax:property)) 
                 as map(xs:QName, xs:QName+) {            
             let $groups := $item/@substitutes/tokenize(normalize-space(.), ' ') ! resolve-QName(., $item)
             return
-                if (empty($groups)) then $accum
-                else
-                    let $itemName := resolve-QName($item/@name, $item)
-                    return
-                        map:merge((
-                            $accum, $groups ! 
-                                (map:entry(., ($accum(.), $itemName)))
-                        ), map{"duplicates": "use-last"})
+                if (empty($groups)) then $accum else
+                
+                (: add this property name to all substituted groups :)
+                let $itemName := resolve-QName($item/@name, $item)
+                return
+                    map:merge((
+                        $accum, 
+                        $groups ! (map:entry(., ($accum(.), $itemName)))
+                    ), map{"duplicates": "use-last"})
          }
     return
         fold-left($elems, map{}, $foldFunction)
@@ -162,7 +165,7 @@ declare function f:sgroupsFromShax($models as element(shax:models))
  : Expansion of shax documents, step 1.
  :
  : Transformations:
- :    insert default values of @card
+ :    insert @card attributes with default cardinality constraint
  :
  : The elements receiving default values are the elements representing
  : particles. These are the descendants of shax:objectType elements.
@@ -199,14 +202,13 @@ declare function f:expandShax1RC($n as node(),
                 if ($n/self::shax:choice) then $defaultCards("choice")
                 else if ($n/self::shax:pgroup) then $defaultCards("pgroup")
                 else $defaultCards("*")
-         
             
         return
             element {node-name($n)} {
                 f:namespaceNodes($n),
                 if ($card or not($defaultCard)) then () else attribute card {$defaultCard},
-                for $a in $n/@* return f:expandShax1RC($a, $defaultCards),                
-                for $c in $n/node() return f:expandShax1RC($c, $defaultCards)
+                $n/@* ! f:expandShax1RC(., $defaultCards),                
+                $n/node() ! f:expandShax1RC(., $defaultCards)
             }
     default return $n                
 };
@@ -236,19 +238,22 @@ declare function f:expandShax2RC($n as node(), $sgroups as map(xs:QName, xs:QNam
                     and empty($n/parent::shax:model)
                     and $elemName = map:keys($sgroups)) then 
                 let $groupMemberNames := ($elemName, $sgroups($elemName))
-                let $cardAttribute := $n/@card
+                let $cardAttributeChoice := $n/@card
+                (: 20190310, hjr: bugfix - choice members must have cardinality 1.1 :)
+                let $cardAttributeMember := attribute card {"1"}
                 let $models := $n/ancestor::shax:models/shax:model
                 let $groupMembers := $models/shax:property[@name/resolve-QName(., ..) = $groupMemberNames]
-                let $DUMMY := trace(count($groupMembers), 'COUNT_GROUP_MEMBERS: ')
+                let $_DEBUG := trace(count($groupMembers), 'COUNT_GROUP_MEMBERS: ')
                 return
                     <shax:choice kind="substitutionGroup">{
                         f:namespaceNodes($n),
-                        $cardAttribute,
+                        $cardAttributeChoice,
                         for $groupMember in $groupMembers
                         let $name := $groupMember/@name/resolve-QName(., ..)
                         return
                             element {$name} {
-                                for $a in $n/@* return f:expandShax2RC($a, $sgroups),
+                                for $a in $n/(@* except @card) return f:expandShax2RC($a, $sgroups),
+                                $cardAttributeMember,
                                 for $c in $n/node() return f:expandShax2RC($c, $sgroups)
                             }
                     }</shax:choice>
@@ -260,6 +265,369 @@ declare function f:expandShax2RC($n as node(), $sgroups as map(xs:QName, xs:QNam
                 }
     default return $n                
 };
+
+declare function f:expandShax31($models as element(shax:models))
+        as node()* {
+    let $trans31 := $models        
+    let $trans31a := f:expandShax31aRC($trans31)
+    let $trans31b := f:expandShax31bRC($trans31a)
+    let $trans31c := f:expandShax31cRC($trans31b)
+    let $trans31d := f:expandShax31dRC($trans31c)
+    let $trans31e := f:expandShax31eRC($trans31d)
+    let $trans31f := f:expandShax31fRC($trans31e)
+    
+    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans4a.xml', $trans31a) (: choices merged :)
+    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans4b.xml', $trans31b) (: cbranches wrapped :)   
+    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans4c.xml', $trans31c) (: multiple choices made pgroups :)    
+    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans4d.xml', $trans31d) (: multiple pgroups made singular :)
+    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans4e.xml', $trans31e) (: nested pgroups with card=1 are merged :)    
+    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans4f.xml', $trans31f) (: add @excludeProperties :)
+    return
+        $trans31c
+};
+
+(:~
+ : Unwrap shax:choice children of shax:choice if they
+ : have the same @card.
+ :)
+declare function f:expandShax31aRC($n as node())
+        as node()* {
+    typeswitch($n)
+    
+    case element(shax:choice) return
+        let $expandedAtts := $n/@* ! f:expandShax31aRC(.)
+        let $expandedChildren := $n/node() ! f:expandShax31aRC(.)
+        
+        let $expanded := ($expandedAtts, $expandedChildren)
+        let $atts := $expanded[self::attribute()]
+        let $children := ($expanded except $atts)
+        return
+            element {node-name($n)} {
+                f:namespaceNodes($n),
+                $atts,
+                for $child in $children
+                return
+                    if ($child/self::shax:choice and $child/@card eq $n/@card) then $child/*
+                    else $child
+            }
+    case element() return
+        element {node-name($n)} {
+            f:namespaceNodes($n),
+            $n/@* ! f:expandShax31aRC(.),
+            $n/node() ! f:expandShax31aRC(.)
+        }
+    default return $n        
+};        
+
+
+(:~
+ : Expansion of a shax document, step 3.
+ :
+ : Transformations:
+ :    objectType  => shape
+ :    choice/x    => wrap in <alternative>
+ :    pgroup      => shape  (too early?)
+ :    @class      => @class, @targetClass
+ :) 
+declare function f:expandShax31bRC($n as node())
+        as node()* {
+    typeswitch($n)
+    
+    case element(shax:annotation) return ()
+    
+    (: shax:objectType => shax:shape :)
+    case element(shax:objectType) return
+        <shax:shape>{
+            f:namespaceNodes($n),
+            $n/@* ! f:expandShax31bRC(.),
+            $n/node() ! f:expandShax31bRC(.)
+        }</shax:shape>
+        
+    (: shax:choice - wrap each branch in a shax:alternative :)
+    case element(shax:choice) return 
+        element {node-name($n)} {
+            f:namespaceNodes($n),
+            $n/@* ! f:expandShax31bRC(.),        
+            for $c in $n/*
+            return
+                <shax:alternative>{
+                    f:expandShax31bRC($c)
+                }</shax:alternative>
+        }
+
+    (: already now transform ? :)
+    case element(shax:pgroup) return 
+        <shax:shape> {
+            f:namespaceNodes($n),
+            $n/@* ! f:expandShax31bRC(.),
+            $n/node() ! f:expandShax31bRC(.)
+        }</shax:shape>            
+
+    case element() return 
+        element {node-name($n)} {
+            f:namespaceNodes($n),
+            $n/@* ! f:expandShax31bRC(.),
+            $n/node() ! f:expandShax31bRC(.)
+        }            
+
+    case attribute(class) return (
+        $n,
+        $n[parent::shax:objectType]/attribute targetClass {.}
+    )
+    default return $n            
+};        
+
+(:~
+ : Mapping choices with maxCard>1 to <pgroup>. Rules:
+ : - each child of an alternative is transformed and its cardinality 
+ :     is adapted (min=0, max=max(item) * max(choice)) 
+ : - if  a transformed child is a choice with a new maxCard>1, the
+ :     transformed child is transformed again (choice -> pgroup)
+ :)
+declare function f:expandShax31cRC($n as node())
+        as node()* {
+    typeswitch($n)
+    case $choice as element(shax:choice) return
+        if ($choice/not(f:isParticleMultiple(.))) then f:expandShax31cRC_copy($choice)
+        else
+            let $ctrans := $choice/shax:alternative/*/f:expandShax31cRC(.)
+            let $ctrans2 := 
+                for $item in $ctrans
+                (: new card: min=0, max=product :)
+                let $newCard := f:multiplyMaxCardinality($choice, $item)
+                return
+                    if ($item/@card eq $newCard) then $item 
+                    else
+                        let $adapted :=
+                            element {node-name($item)} {
+                               $item/(@* except @card), 
+                                attribute card {$newCard}, 
+                                $item/node()
+                            }
+                        return
+                            if ($adapted/self::shax:choice[f:isParticleMultiple(.)]) then 
+                                f:expandShax31cRC($adapted)
+                            else $adapted
+            return <shax:pgroup card="1" fromChoiceWithCard="{$choice/@card}">{$ctrans2}</shax:pgroup>
+        
+    case element() return 
+        f:expandShax31cRC_copy($n)
+    default return $n
+};    
+
+(:~
+ : Transforms pgroups with maxCard>1 into pgroups with card=1.
+ :)
+declare function f:expandShax31dRC($n as node())
+        as node()* {
+    typeswitch($n)
+    case $pgroup as element(shax:pgroup) return
+        if ($pgroup/not(f:isParticleMultiple(.))) then f:expandShax31dRC_copy($pgroup)
+        else
+            let $ctrans := $pgroup/*/f:expandShax31dRC(.)
+            let $ctrans2 := 
+                for $item in $ctrans
+                (: new card: min=0, max=product :)
+                let $newCard := f:multiplyMaxCardinality($pgroup, $item)
+                return
+                    if ($item/@card eq $newCard) then $item 
+                    else
+                        let $adapted :=
+                            element {node-name($item)} {
+                               $item/(@* except @card), 
+                                attribute card {$newCard}, 
+                                $item/node()
+                            }
+                        return
+                            if ($adapted/self::shax:pgroup[f:isParticleMultiple(.)]) then 
+                                f:expandShax31dRC($adapted)
+                            else $adapted
+            return <shax:pgroup card="1" fromPgroupWithCard="{$pgroup/@card}">{$ctrans2}</shax:pgroup>
+        
+    case element() return 
+        f:expandShax31dRC_copy($n)
+    default return $n
+};    
+
+(:~
+ : Merges nested pgroups.
+ :
+ : Note that the pgroups are known to have card=1.
+ :)
+declare function f:expandShax31eRC($n as node())
+        as node()* {
+    typeswitch($n)
+    case $pgroup as element(shax:pgroup) return
+        let $content := $pgroup/node() ! f:expandShax31eRC(.)
+        return
+            if ($pgroup/parent::shax:pgroup) then $content
+            else
+                element {node-name($pgroup)} {
+                    $pgroup/@* ! f:expandShax31eRC(.),
+                    $content
+                }
+    case $elem as element() return
+        element {node-name($elem)} {
+            $elem/@* ! f:expandShax31eRC(.),
+            $elem/node() ! f:expandShax31eRC(.)
+        }
+    default return $n
+};    
+
+(:~
+ : Merging nested pgroups.
+ :
+ : Augment <alternative>s with <excludeProperties>.
+ :)
+declare function f:expandShax31fRC($n as node())
+        as node()* {
+    typeswitch($n)
+    case $alter as element(shax:alternative) return
+        let $ownProperties := $alter//(* except shax:*)
+        let $ownPropertyIris := $ownProperties/node-name(.) => distinct-values()
+        let $alternativeProperties := $alter/../(shax:alternative except $alter)//(* except shax:*)
+        let $alternativePropertyIris := $alternativeProperties/node-name(.) => distinct-values()
+        let $excludedProperties := $alternativePropertyIris[not(. = $ownPropertyIris)]
+        let $content := (
+            $alter/@* ! f:expandShax31fRC(.),
+            $alter/node() ! f:expandShax31fRC(.)
+        )
+        let $contentAtts := $content[self::attribute()]
+        let $contentChildren := $content except $contentAtts
+        return
+            element {node-name($alter)} {
+                $contentAtts,
+                <shax:excludeProperties iris="{$excludedProperties}"/>,
+                $contentChildren
+            }
+    case $elem as element() return
+        element {node-name($elem)} {
+            $elem/@* ! f:expandShax31fRC(.),
+            $elem/node() ! f:expandShax31fRC(.)
+        }
+    default return $n
+};    
+
+declare function f:expandShax31cRC_copy($e as element())
+        as element() {
+    element {node-name($e)} {
+        f:namespaceNodes($e),
+        $e/@* ! f:expandShax31cRC(.),
+        $e/node() ! f:expandShax31cRC(.)
+    }
+};
+
+declare function f:expandShax31dRC_copy($e as element())
+        as element() {
+    element {node-name($e)} {
+        f:namespaceNodes($e),
+        $e/@* ! f:expandShax31dRC(.),
+        $e/node() ! f:expandShax31dRC(.)
+    }
+};
+
+(:
+(:~
+ : Edits multipls choices. Rules:
+ :
+ : (a) new cardinality = 
+ :     current cardinality if one is true:
+ :     - current cardinality not set
+ :     - $multiplyMaxCardWith not set 
+ :     (0 - $multiplyMaxCardWith) if all is true:
+ :     - current name = shax:choice
+ :     - current maxCard>1
+ :     otherwise: (0 - current maxCard * $multiplyMaxCardWith)
+ : (b) new element name =
+ :     shax:pgroup if all is true:
+ :     - current name = shax:choice
+ :     - max(current maxCard, $multiplyMaxCardWith) > 1
+ :     otherwise: current name
+ : (c) new element content = :  
+ :     current content recursively transformed ($multiplyMaxCardWith not set), if one is true:
+ :     - current name != shax:choice
+ :     - new maxCard = 1
+ :     otherwise: shax:alternative/* recursively transformed ($multiplyMaxCardWith = $n/@card ! maxCard(.)) 
+ :)
+declare function f:expandShax31cRC($n as node(), $multiplyMaxCardWith as xs:integer?)
+        as node()* {
+    typeswitch($n)
+
+    case element() return
+        let $card :=
+            if (not($n/@card) or empty($multiplyMaxCardWith)) then $n/@card
+            else f:adaptChoiceBranchCardinality($n/@card, $multiplyMaxCardWith)
+        let $maxCard := f:cardRangeFromCardDesc($card)[2]            
+        let $name :=
+            if (node-name($n) ne QName($f:URI_SHAX, 'choice') or $maxCard eq 1) then node-name($n)
+            else QName($f:URI_SHAX, 'shax:pgroup')
+        let $content :=
+            if (node-name($n) ne QName($f:URI_SHAX, 'choice') or $maxCard eq 1) then (
+                $n/(@* except @card) ! f:expandShax31cRC(., ()),
+                $n/node() ! f:expandShax31cRC(., ())
+            ) else (
+                $n/shax:alternative ! f:expandShax31cRC(., $maxCard)    
+            )
+        let $contentAtts := ( 
+            $content[self::attribute()][not(self::attribute(shax:card))], 
+            $card ! attribute card {.})
+        let $contentElems := $content except $contentAtts
+        return
+            element {$name} {$contentAtts, $contentElems}
+            
+     default return $n       
+};    
+:)
+
+(:~
+ : Expansion of a shax document, step 3.
+ :
+ : Transformations:
+ :    objectType  => shape
+ :    choice      => xone
+ :    pgroup      => shape
+ :                   (if pgroup child of shax:choice: 
+ :                       also create: excludeProperties) 
+ :) 
+declare function f:expandShax3($models as element(shax:models))
+        as node()* {
+    let $models := f:expandShax3aRC($models)
+    return
+        f:expandShax3RC($models)
+};
+
+(:~
+ : Unwrap shax:choice children of shax:choice if they
+ : have the save @card.
+ :)
+declare function f:expandShax3aRC($n as node())
+        as node()* {
+    typeswitch($n)
+    
+    case element(shax:choice) return
+        let $expandedAtts := $n/@* ! f:expandShax3aRC(.)
+        let $expandedChildren := $n/node() ! f:expandShax3aRC(.)
+        
+        let $expanded := ($expandedAtts, $expandedChildren)
+        let $atts := $expanded[self::attribute()]
+        let $children := ($expanded except $atts)
+        return
+            element {node-name($n)} {
+                f:namespaceNodes($n),
+                $atts,
+                for $child in $children
+                return
+                    if ($child/self::shax:choice and $child/@card eq $n/@card) then $child/*
+                    else $child
+            }
+    case element() return
+        element {node-name($n)} {
+            f:namespaceNodes($n),
+            $n/@* ! f:expandShax3aRC(.),
+            $n/node() ! f:expandShax3aRC(.)
+        }
+    default return $n        
+};        
 
 (:~
  : Expansion of a shax document, step 3.
@@ -304,7 +672,7 @@ declare function f:expandShax3RC($n as node())
                 () 
             else
                 let $myProps := $n//*[f:isPropertyNode(.)]/node-name()
-                let $otherProps := $n/../(* except $n)
+                let $otherProps := $n/parent::shax:choice/(* except $n)
                     /descendant-or-self::*[f:isPropertyNode(.)]/node-name()
                 return
                     <shax:excludeProperties iris="{$otherProps[not(. = $myProps)]}"/>,
@@ -320,12 +688,12 @@ declare function f:expandShax3RC($n as node())
                 for $c in $n/node() return f:expandShax3RC($c)
             }
         return
-            (: element not choid of 'choice': just copy :)        
+            (: element not child of 'choice': just copy :)        
             if (not($n/parent::shax:choice) or f:isParticleMultiple($n/..))then 
                 $elem 
             (: element is child of 'choice': copy and add 'excludeProperties' :)                
             else
-                let $otherProps := $n/../(* except $n)
+                let $otherProps := $n/parent::shax:choice/(* except $n)
                     /descendant-or-self::*[f:isPropertyNode(.)]/node-name()
                 return
                     <shax:shape>{
@@ -342,6 +710,12 @@ declare function f:expandShax3RC($n as node())
     default return $n            
 };        
 
+(:~
+ : A shax:choice is mapped to a shax:xone.
+ :
+ : Rules for the construction of the choice branches:
+ : @TO.DO - ADD DOCUMENTATION
+ :)
 declare function f:expandShax3RC_choice($n as node())
         as node()* {
     let $cardinalityRange := f:getCardinalityRange($n)
@@ -350,39 +724,46 @@ declare function f:expandShax3RC_choice($n as node())
         for $c in $n/node() return f:expandShax3RC($c)
     )
     return
-        (: case 1: maxOccurs of choice > 1 => branches not mutually exclusive
-                                           => mapping to pgroup, not xone :)
-        if ($cardinalityRange[2] > 1 or $cardinalityRange[2] < 0) then                                           
+        (: case 1: choice.maxOccurs > 1
+           ==================================
+           => branches not mutually exclusive
+           => mapping to pgroup, not xone 
+         :)
+        if ($cardinalityRange[2] > 1 or $cardinalityRange[2] < 0) then        
             let $contents_atts := $contents[self::attribute()]
-            let $contents_children := $contents except $contents_atts
+            let $cbranches := $contents except $contents_atts
             
             (: unwrap the children of shax:shape children, 
                   which have been obtained for shax:pgroup elements :)
-            let $contents_children_adapted1 :=
-                for $c in $contents_children
+            let $cbranches_adapted1 :=
+                for $cbranch in $cbranches[self::element()]
                 return
                     (: shax:shape => unwrap, multiplying multiplicities :)
-                    if ($c/self::shax:shape) then
-                        for $cc in $c/*
+                    if ($cbranch/self::shax:shape) then
+                        let $_DEBUG := trace((), 'CHOICE WITH MAXOCCURS>1 - UNWRAP CHILD SHAPES')
+                        for $particle in $cbranch/*
                         (: unwrapping requires multiplication of cardinality ranges :)                        
                         let $cardAdaptedAtt := 
-                            (: let $cardAdapted := f:multiplyCardinalityRanges($n, $c) :) (: 20171025, hjr :)
-                            let $cardAdapted := f:multiplyCardinalityRanges($c, $cc)                            
+                            let $cardAdapted := f:multiplyCardinalityRanges($cbranch, $particle)                            
                             return attribute card {$cardAdapted}[$cardAdapted]
                         return
-                            element {node-name($cc)} {
-                                $cc/(@* except @card), 
+                            element {node-name($particle)} {
+                                $particle/(@* except @card), 
                                 $cardAdaptedAtt, 
-                                $cc/node()
+                                $particle/node()
                             } 
                     (: not shax:shape => nothing to unwrap :)
-                    else $c
+                    else $cbranch
                     
-            (: adapt the cardinality by combining the cardinalites of choice and branches :)                    
-            let $contents_children_adapted2 :=
-                for $c in $contents_children_adapted1
+            (: adapt the cardinality by combining the cardinalites of choice and branches :)         
+            
+            (: PROBLEM:
+               if the parent of $n is a shax:choice with maxCard=1: 
+               $n must be mapped to a shape which excludes the contents of the other parent choice branches :)
+            let $cbranches_adapted2 :=
+                for $c in $cbranches_adapted1
                 let $cardAdaptedAtt := 
-                    let $cardAdapted := f:multiplyCardinalityRanges($n, $c)
+                    let $cardAdapted := f:multiplyMaxCardinality($n, $c)
                     return attribute card {$cardAdapted}[$cardAdapted]
                 return
                     element {node-name($c)} {
@@ -391,15 +772,35 @@ declare function f:expandShax3RC_choice($n as node())
                         $c/node()
                     }
             return (
-                $contents_children_adapted2
+                (: case: this choice is child of a parent choice with maxOccurs=1 
+                   => the properties must be wrapped in a shape which
+                      excludes the properties of the parent-sibling choice branches
+                 :)
+                if ($n/parent::shax:choice/f:getCardinalityRange(.)[1] le 1) then
+                    let $myProps := $n//*[f:isPropertyNode(.)]/node-name()
+                    let $otherProps := $n/parent::shax:choice/(* except $n)
+                        /descendant-or-self::*[f:isPropertyNode(.)]/node-name()
+                    let $excludedProps := $otherProps[not(. = $myProps)]                        
+                    return
+                        <shax:shape shax:anno="repeatable-choice">{
+                            <shax:excludeProperties iris="{$excludedProps}"/>,
+                            $cbranches_adapted2
+                        }</shax:shape>
+                else
+                    <shax:shape shax:anno="repeatable-choice">{
+                        $cbranches_adapted2
+                    }</shax:shape>                        
                 (: @TO.DO - clarify if $contents_atts can be dropped - where should they be attached? :)
             )
         else
         
-        (: case 2: maxOccurs of choice = 1 => branches are mutually exclusive :)
+        (: case 2: choice.maxOccurs = 1
+           =====================================
+           => branches are mutually exclusive 
+         :)
         
     let $contents_atts := $contents[self::attribute()]
-    let $contents_children := $contents except $contents_atts
+    let $cbranches := $contents except $contents_atts
     return
         <shax:xone docum="choice between properties and/or property groups">{
             f:namespaceNodes($n),        
@@ -417,7 +818,7 @@ declare function f:expandShax3RC_choice($n as node())
                     }</shax:shape>,
                 
             (: the choice branches :)
-            $contents_children
+            $cbranches
         }</shax:xone>
 };
 

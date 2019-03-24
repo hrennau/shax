@@ -82,6 +82,22 @@ declare function f:getCardinalityRange($p as element())
         else error(QName((), 'SYNTAX_ERROR'), concat('Invalid cardinality: ', $ecard))
 };     
 
+declare function f:cardRangeFromCardDesc($desc as xs:string?)
+        as xs:integer+ {
+    if (not($desc)) then (0, -1)
+    else if ($desc eq '?') then (0, 1)
+    else if ($desc eq '+') then (1, -1)
+    else if ($desc eq '*') then (0, -1)        
+    else if (matches($desc, '^\s*\d+\s*$')) then 
+        let $value := normalize-space($desc) ! xs:integer(.)
+        return ($value, $value)
+    else if (matches($desc, '^\s*\d+\s*-\s*\d+\s*$')) then
+        let $limits := 
+            tokenize(replace($desc, '\s*(\d+)\s*-\s*(\d+)\s*$', '$1#$2'), '#')
+        return $limits ! xs:integer(.)                        
+    else error(QName((), 'SYNTAX_ERROR'), concat('Invalid cardinality: ', $desc))
+};     
+
 (:
 (:~
  : Returns the range of cardinalities allowed by a SHAX descriptor. If $considerDefault
@@ -116,7 +132,7 @@ declare function f:getCardinalityRange($p as element(), $considerDefault as xs:b
 :)
 
 (:~
- : Returns true if the cardinality of a SHAX particle is greater than one.
+ : Returns true if the max cardinality of a SHAX particle is greater than one.
  :
  : @param p a shax particle (property or compositor)
  : @return true if the cardinality range allows multiple values
@@ -126,6 +142,19 @@ declare function f:isParticleMultiple($p as element())
     let $maxCard := f:getCardinalityRange($p)[2]
     return $maxCard gt 1 or $maxCard lt 0
 };        
+
+(:~
+ : Returns true if the min cardinality of a SHAX particle is zero.
+ :
+ : @param p a shax particle (property or compositor)
+ : @return true if the cardinality range allows zero values
+ :)
+declare function f:isParticleOptional($p as element())
+        as xs:boolean {
+    let $minCard := f:getCardinalityRange($p)[1]
+    return $minCard eq 0
+};        
+
 
 (:
 (:~
@@ -215,6 +244,54 @@ declare function f:multiplyCardinalityRanges($elem1 as element(), $elem2 as elem
     return
         f:cardinalityDescFromCardinalityRange($min, $max)
 };
+
+(:~
+ : Returns the occurrence descriptor capturing the result of 
+ : "multiplying" maxOccurs and setting minOccurs to 0. 
+ :
+ : This operation is needed when dealing with a choice which
+ : has maxOccurs>1. Each branch obtains a maxOccurs which is
+ * the product of choice.maxOccurs and branch.maxOccurs. The
+ : minOccurs of the branch, on the other hand, is zero,
+ : as the branch is possibly never used.
+ : 
+ : Rules:
+ :     maxOccurs(left)   = 0  => maxOccurs = 0
+ :     maxOccurs(left)   = 1  => maxOccurs = maxOccurs(right)
+ :     maxOccurs(left)   = *  => maxOccurs = *
+ :     maxOccurs(right)  = *  => maxOccurs = *
+ :     otherwise              => maxOccurs = maxOccurs(right) * maxOccurs(left) 
+ :)
+declare function f:multiplyMaxCardinality($elem1 as element(), $elem2 as element())                                             
+        as xs:string {
+    let $lhsRange := f:getCardinalityRange($elem1)
+    let $lhsMax := $lhsRange[2]
+    let $rhsRange := f:getCardinalityRange($elem2)    
+    let $rhsMax := $rhsRange[2]
+    
+    let $min := 0
+    let $max :=
+        if (0 = ($lhsMax, $rhsMax)) then 0
+        else if (-1 = ($lhsMax, $rhsMax)) then -1
+        else $lhsMax * $rhsMax
+    return
+        f:cardinalityDescFromCardinalityRange($min, $max)
+};
+
+declare function f:adaptChoiceBranchCardinality($branchCard as xs:string, $choiceMaxCard as xs:integer)                                             
+        as xs:string {
+    if ($choiceMaxCard eq 1) then $branchCard else
+    
+    let $max := f:cardRangeFromCardDesc($branchCard)[2]
+    let $adaptedMin := 0
+    let $adaptedMax :=
+        if (0 = ($max, $choiceMaxCard)) then 0
+        else if (-1 = ($max, $choiceMaxCard)) then -1
+        else $max * $choiceMaxCard
+    return
+        f:cardinalityDescFromCardinalityRange($adaptedMin, $adaptedMax)
+};
+
 
 (:~
  : Edits a SHAX model, inserting cardinality attributes expressing the 
