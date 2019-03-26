@@ -275,6 +275,8 @@ declare function f:expandShax31($models as element(shax:models))
     let $trans31d := f:expandShax31dRC($trans31c)
     let $trans31e := f:expandShax31eRC($trans31d)
     let $trans31f := f:expandShax31fRC($trans31e)
+    let $trans31g := f:expandShax31gRC($trans31f)
+    let $trans31h := f:expandShax31hRC($trans31g)    
     
     let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans4a.xml', $trans31a) (: choices merged :)
     let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans4b.xml', $trans31b) (: cbranches wrapped :)   
@@ -282,6 +284,8 @@ declare function f:expandShax31($models as element(shax:models))
     let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans4d.xml', $trans31d) (: multiple pgroups made singular :)
     let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans4e.xml', $trans31e) (: nested pgroups with card=1 are merged :)    
     let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans4f.xml', $trans31f) (: add @excludeProperties :)
+    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans4g.xml', $trans31g) (: shax:choice -> shax:xone, shax:alternative -> shax:shape :)
+    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans4h.xml', $trans31h) (: shax:group unwrapped  :)    
     return
         $trans31c
 };
@@ -505,6 +509,66 @@ declare function f:expandShax31fRC($n as node())
             $elem/@* ! f:expandShax31fRC(.),
             $elem/node() ! f:expandShax31fRC(.)
         }
+    default return $n
+};    
+
+(:~
+ : Mapping shax:choice to shax:xone, shax:alternative to shax:shape.
+ :)
+declare function f:expandShax31gRC($n as node())
+        as node()* {
+    typeswitch($n)
+    case $choice as element(shax:choice) return
+        <shax:xone docum="choice between properties and/or property groups">{
+            f:namespaceNodes($choice),
+            $choice/(@* except $choice/@docum) ! f:expandShax31gRC(.),
+            $choice/node() ! f:expandShax31gRC(.)
+        }</shax:xone>
+        
+    case $alter as element(shax:alternative) return
+        <shax:shape shax:anno="alternative">{
+            f:namespaceNodes($alter),
+            $alter/@* ! f:expandShax31gRC(.),
+            $alter/node() ! f:expandShax31gRC(.)
+        }</shax:shape>
+        
+    case $elem as element() return
+        element {node-name($elem)} {
+            f:namespaceNodes($elem),
+            $elem/@* ! f:expandShax31gRC(.),
+            $elem/node() ! f:expandShax31gRC(.)
+    }
+
+    default return $n
+};    
+
+(:~
+ : Unwrapping shax:pgroup.
+ :)
+declare function f:expandShax31hRC($n as node())
+        as node()* {
+    typeswitch($n)
+    case $pgroup as element(shax:pgroup) return
+        let $contents := (
+            $pgroup/node() ! f:expandShax31hRC(.)
+        )
+        return
+            if ($pgroup/(parent::shax:shape, parent::shax:pgroup) and $pgroup/@card eq '1') then 
+                $contents
+            else
+                element {node-name($pgroup)} {
+                    f:namespaceNodes($pgroup),
+                    $pgroup/@* ! f:expandShax31hRC(.),                    
+                    $contents
+                }
+        
+    case $elem as element() return
+        element {node-name($elem)} {
+            f:namespaceNodes($elem),
+            $elem/@* ! f:expandShax31hRC(.),
+            $elem/node() ! f:expandShax31hRC(.)
+    }
+
     default return $n
 };    
 
