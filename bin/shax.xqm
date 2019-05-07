@@ -9,7 +9,7 @@
 (:~@operations
    <operations>
       <operation name="shacl" type="item()" func="shaclOp">     
-         <param name="shax" type="docFOX" sep="SC" pgroup="input"/>        
+         <param name="shax" type="docFOX" sep="SC" fct_minDocCount="1" pgroup="input"/>        
          <pgroup name="input" minOccurs="1"/>   
          <param name="format" type="xs:string?" default="ttl" fct_values="xml, ttl"/>
          <param name="deep" type="xs:boolean?" default="false"/>
@@ -101,10 +101,12 @@ declare function f:expandShax($models as element()+)
            choice     => xone 
            annotation => () :)   
     let $trans4 := f:expandShax3($trans3)
-    let $trans4b := f:expandShax31($trans3)
+    let $trans41 := f:expandShax31($trans3)
+    let $trans4 := $trans41
     
     (: *** property => pshape :)
     let $trans5 := f:expandShax4RC($trans4)
+    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans5.xml', $trans5)
     
     (: *** datatype => shape :)    
     let $trans6 := f:expandShax5RC($trans5)
@@ -287,7 +289,7 @@ declare function f:expandShax31($models as element(shax:models))
     let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans4g.xml', $trans31g) (: shax:choice -> shax:xone, shax:alternative -> shax:shape :)
     let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans4h.xml', $trans31h) (: shax:group unwrapped  :)    
     return
-        $trans31c
+        $trans31h
 };
 
 (:~
@@ -467,11 +469,13 @@ declare function f:expandShax31eRC($n as node())
             if ($pgroup/parent::shax:pgroup) then $content
             else
                 element {node-name($pgroup)} {
+                    f:namespaceNodes($n),
                     $pgroup/@* ! f:expandShax31eRC(.),
                     $content
                 }
     case $elem as element() return
         element {node-name($elem)} {
+            f:namespaceNodes($n),        
             $elem/@* ! f:expandShax31eRC(.),
             $elem/node() ! f:expandShax31eRC(.)
         }
@@ -500,12 +504,14 @@ declare function f:expandShax31fRC($n as node())
         let $contentChildren := $content except $contentAtts
         return
             element {node-name($alter)} {
+                f:namespaceNodes($n),
                 $contentAtts,
                 <shax:excludeProperties iris="{$excludedProperties}"/>,
                 $contentChildren
             }
     case $elem as element() return
         element {node-name($elem)} {
+            f:namespaceNodes($n),        
             $elem/@* ! f:expandShax31fRC(.),
             $elem/node() ! f:expandShax31fRC(.)
         }
@@ -590,59 +596,335 @@ declare function f:expandShax31dRC_copy($e as element())
     }
 };
 
-(:
 (:~
- : Edits multipls choices. Rules:
+ : Expansion of a shax document, step 4.
  :
- : (a) new cardinality = 
- :     current cardinality if one is true:
- :     - current cardinality not set
- :     - $multiplyMaxCardWith not set 
- :     (0 - $multiplyMaxCardWith) if all is true:
- :     - current name = shax:choice
- :     - current maxCard>1
- :     otherwise: (0 - current maxCard * $multiplyMaxCardWith)
- : (b) new element name =
- :     shax:pgroup if all is true:
- :     - current name = shax:choice
- :     - max(current maxCard, $multiplyMaxCardWith) > 1
- :     otherwise: current name
- : (c) new element content = :  
- :     current content recursively transformed ($multiplyMaxCardWith not set), if one is true:
- :     - current name != shax:choice
- :     - new maxCard = 1
- :     otherwise: shax:alternative/* recursively transformed ($multiplyMaxCardWith = $n/@card ! maxCard(.)) 
- :)
-declare function f:expandShax31cRC($n as node(), $multiplyMaxCardWith as xs:integer?)
+ :    <foo:bar>  => <pshape path="foo:bar">
+ :
+ : Content:
+ : - @name                              # the property name
+ : - @type |                            # references a datatype or object type
+ :     @base, @facet*, value-elem* |    # local definition of a datatype
+ :     @class, property-elems           # local definition of an object type
+ : - @kind                              # constraint - IRI, blank node, both?
+ :
+ : Note:
+ : - @type should not be combined with @class, as @class should be part 
+ :         of the type definition
+ : - @kind can be used in order to allow blank nodes or to enforce IRIs
+ :) 
+declare function f:expandShax4RC($n as node())
         as node()* {
     typeswitch($n)
-
+    case element(shax:shape) | 
+         element(shax:xone) | 
+         element(shax:pgroup) | 
+         element(shax:dataType) 
+    return
+        element {node-name($n)} {
+            f:namespaceNodes($n),        
+            for $a in $n/@* return f:expandShax4RC($a),
+            for $c in $n/node() return f:expandShax4RC($c)
+        }
+        
     case element() return
-        let $card :=
-            if (not($n/@card) or empty($multiplyMaxCardWith)) then $n/@card
-            else f:adaptChoiceBranchCardinality($n/@card, $multiplyMaxCardWith)
-        let $maxCard := f:cardRangeFromCardDesc($card)[2]            
-        let $name :=
-            if (node-name($n) ne QName($f:URI_SHAX, 'choice') or $maxCard eq 1) then node-name($n)
-            else QName($f:URI_SHAX, 'shax:pgroup')
-        let $content :=
-            if (node-name($n) ne QName($f:URI_SHAX, 'choice') or $maxCard eq 1) then (
-                $n/(@* except @card) ! f:expandShax31cRC(., ()),
-                $n/node() ! f:expandShax31cRC(., ())
-            ) else (
-                $n/shax:alternative ! f:expandShax31cRC(., $maxCard)    
-            )
-        let $contentAtts := ( 
-            $content[self::attribute()][not(self::attribute(shax:card))], 
-            $card ! attribute card {.})
-        let $contentElems := $content except $contentAtts
-        return
-            element {$name} {$contentAtts, $contentElems}
+        if ($n/self::shax:*) then
+            element {node-name($n)} {
+                f:namespaceNodes($n),            
+                for $a in $n/@* return f:expandShax4RC($a),
+                for $c in $n/node() return f:expandShax4RC($c)
+            }
             
-     default return $n       
-};    
-:)
+        (: property element :)
+        else
+            let $propUse := $n
+            (: property reference is implicit - absence of @type :)
+            let $propRef :=
+                if ($propUse/@type) then () 
+                else
+                    $propUse
+                    /ancestor::shax:models/shax:model
+                    /shax:property[resolve-QName(@name, .) eq node-name($n)]
 
+            let $propDecl := ($propRef, $propUse)[1]
+            
+            (: @kind - SHACL node kind (e.g. sh:BlankNodeOrIRI :)
+            let $kindAtt := $propDecl/@kind/attribute nodeKind {i:shaclNodeKind(.)}
+            
+            (: @path - the property IRI :)
+            let $path := $propDecl/(@name/resolve-QName(., ..), node-name($propUse))[1]
+            
+            (: @base - base type :)
+            let $baseAtt := $propDecl/@base/attribute base {.}
+
+            (: @type - data type :)
+            let $typeAtt := $propDecl/@type/attribute type {.}
+
+            (: @class - rdf CLASS :)
+            let $classAtt := $propDecl/@class/attribute class {.}    
+            
+            (: @ordered - SHACL constraint 'ordered' :)
+            let $orderedAtt := $propDecl/@ordered/attribute ordered {.}
+            
+            (: facet attributes :)
+            let $facetAtts := f:getShaclFacets_atts($propDecl)
+
+            (: facet element :)
+            let $facetElems := f:getShaclFacets_elems($propDecl)
+            
+            (: @minCount, @maxCount :)
+            let $cardAtt := f:getPropertyCardinality($propUse)
+            return               
+                <shax:pshape path="{$path}">{
+                    f:namespaceNodes($propDecl),   
+                    $baseAtt,
+                    $typeAtt,
+                    $kindAtt,
+                    $classAtt,
+                    $cardAtt,
+                    $orderedAtt,
+                    $facetAtts,
+                    $facetElems
+                }</shax:pshape>
+                
+    (: @card :)            
+    case attribute(card) return
+        f:getPropertyCardinality($n/..)
+    default return $n                
+};        
+
+(:~
+ : Expansion of a shax document, step 5.
+ :
+ :    *:dataType  => shape
+ :
+ : The shape has a type and an optional base attribute, as
+ : well as facet attributes.
+ :) 
+declare function f:expandShax5RC($n as node())
+        as node()? {
+    typeswitch($n)
+    case element(shax:dataType) return
+        let $baseAtt := $n/@base/attribute base {.} 
+        let $itemTypeAtt := $n/@itemType/attribute itemType {.}        
+        let $containerAtt := $n/@container/attribute container {.}        
+        let $memberTypesAtt := $n/@memberTypes/attribute memberTypes {.}        
+        let $typeAtt := $n/@type/attribute type {.}
+        let $minSizeAtt := $n/@minSize/attribute minSize {.}
+        let $maxSizeAtt := $n/@maxSize/attribute maxSize {.}        
+        let $facetAtts := f:getShaclFacets_atts($n)
+        let $facetElems := f:getShaclFacets_elems($n)        
+        return
+            <shax:shape name="{$n/@name}">{
+                f:namespaceNodes($n),
+                $baseAtt,
+                $itemTypeAtt, 
+                $containerAtt,
+                $memberTypesAtt,
+                $minSizeAtt,
+                $maxSizeAtt,
+                $typeAtt,
+                $facetAtts,
+                $facetElems
+            }</shax:shape>
+        
+    case element() return
+        element {node-name($n)} {
+            f:namespaceNodes($n),        
+            for $a in $n/@* return f:expandShax5RC($a),
+            for $c in $n/node() return f:expandShax5RC($c)
+        }
+    default return $n        
+};        
+
+(:~
+ : Expansion of a shax document, step 6.
+ :
+ :    pgroup            => <and>...</and> | 
+ :                         <shape><and>...</and></shape>
+ 
+ :    excludeProperties => 
+ :    <not><pshape/></not> 
+ :    |
+ :    <shape><not><pshape/></not></shape>
+ :    | 
+ :    <not>
+ :       <shape>
+ :          <or>
+ :             <pshape/>...
+ :          </or>
+ :       </shape>
+ :    </not> 
+ :    |
+ :    <shape>...</shape>
+ :
+ :    @type             => @datatype | @node
+ :    @base             => @datatype | @node
+ :    @itemType         => @itemDatatype | @itemNode 
+ :
+ : If the @type/@base/@itemType/@itemBase contains the name 
+ : of a shape, it is translated into a @node (@itemNode) constraint, 
+ : otherwise into a @datatype (@itemDatatype) constraint.
+ :
+ : @param n a node to be processed recursively
+ : @param shapeNames the names of all shapes
+ : @return the processed node
+ :) 
+declare function f:expandShax6RC($n as node(), $shapeNames as xs:QName*)
+        as node()? {
+    typeswitch($n)
+    
+    (: shax:pgroup => 
+                      <shax:and>...</shax:and> | 
+          <shax:shape><shax:and>...</shax:and></shax:shape> :)
+    case element(shax:pgroup) return
+        let $and :=
+            <shax:and docum="choice branch comprising several properties">{
+                for $a in $n/@* return f:expandShax6RC($n, $shapeNames),
+                for $c in $n/node() return f:expandShax6RC($c, $shapeNames)            
+            }</shax:and>
+        return
+            if ($n/(parent::shax:shape, parent::shax:pshape)) then $and
+            else 
+                <shax:shape docum="choice branch comprising a single property">{$and}</shax:shape>
+                
+    (: shax:excludeProperties => 
+                      <shax:not><shax:pshape/></shax:not> |
+          <shax:shape><shax:not><shax:pshape/></shax:not></shax:shape> |
+           
+                      <shax:not><shax:shape><shax:or>...</shax:or></shax:shape></shax:not> |
+          <shax:shape><shax:not><shax:shape><shax:or>...</shax:or></shax:shape></shax:not></shax:shape>
+     :)
+    case element(shax:excludeProperties) return
+        let $names := $n/@iris/tokenize(normalize-space(.), ' ') ! resolve-QName(., $n)
+        let $not :=
+            <shax:not docum="excludes the properties of alternative choice branches">{
+                if (count($names) eq 1) then
+                    <shax:pshape path="{$names}" minCount="1"/>
+                else
+                    <shax:shape>{                
+                        <shax:or>{
+                            $names ! <shax:pshape path="{.}" minCount="1"/>
+                        }</shax:or>
+                    }</shax:shape>
+            }</shax:not>
+        return
+            if ($n/(parent::shax:shape, parent::shax:pshape)) then $not
+            else <shax:shape>{$not}</shax:shape>
+                
+    case element() return
+        element {node-name($n)} {
+            f:namespaceNodes($n),        
+            for $a in $n/@* return f:expandShax6RC($a, $shapeNames),
+            for $c in $n/node() return f:expandShax6RC($c, $shapeNames)
+        }
+        
+    (: @type/@base references a shape => @node constraint
+       otherwise => @datatype constraint
+     :)
+    case attribute(type) | attribute(base) return
+        let $qname := resolve-QName($n, $n/..)
+        return
+            if ($qname = $shapeNames) then attribute node {$n}
+            else attribute datatype {$n}
+            
+    (: @itemType references a shape => @itemNode constraint
+       otherwise => @itemDatatype constraint
+     :)
+    case attribute(itemType) return
+        let $qname := resolve-QName($n, $n/..)
+        return
+            if ($qname = $shapeNames) then attribute itemNode {$n}
+            else attribute itemDatatype {$n}
+    default return $n        
+};     
+
+(:~
+ : Constructs canonical shax attributes expressing type
+ : facets.
+ :
+ : @param elem a shax element
+ : @return shax attributes
+ :)
+declare function f:getShaclFacets_atts($elem as element())
+        as attribute()* {
+    $elem/(@minInclusive, @min)[1]/attribute minInclusive {.},
+    $elem/(@maxInclusive, @max)[1]/attribute maxInclusive {.},       
+    $elem/(@minExclusive, @minEx)[1]/attribute minExclusive {.},
+    $elem/(@maxExclusive, @minEx)[1]/attribute maxExclusive {.},
+    $elem/(@minLength, @minLen)[1]/attribute minLength {.},
+    $elem/(@maxLength, @maxLen)[1]/attribute maxLength {.},       
+    $elem/@pattern/attribute pattern {.},        
+    $elem/@flags/attribute flags {.}        
+};
+
+(:~
+ : Constructs canonical shax elements expressing type
+ : facets.
+ :
+ : @param elem a shax element
+ : @return shax elements
+ :)
+declare function f:getShaclFacets_elems($elem as element())
+        as element()* {
+    $elem/shax:value
+};
+
+(:~
+ : Returns true if a given element is a shax property node.
+ :
+ : @param elem the node to be checked
+ : @return true if the element is a property node
+ :)
+declare function f:isPropertyNode($elem as element())
+        as xs:boolean {
+    not($elem/self::shax:*)        
+};
+
+(:~
+ : Returns SHACL attributes 'minCount' and/or 'maxCount' which
+ : express the cardinality constraints of a property shape.
+ :
+ : @param p a shax property element
+ : @return a 'minCount' and/or a 'maxCount' attribute
+ :)
+declare function f:getPropertyCardinality($p as element())
+        as attribute()* {
+    let $ecard := ($p/@card, $p/ancestor::*[@defaultCard][1]/@defaultCard)[1]
+    return
+        if (not($ecard)) then (
+            attribute minCount {0},
+            attribute maxCount {-1}
+        )
+        else if ($ecard eq '?') then (
+            attribute minCount {0},
+            attribute maxCount {1}
+        )
+        else if ($ecard eq '+') then (
+            attribute minCount {1},
+            attribute maxCount {-1}
+        )
+        else if ($ecard eq '*') then (
+            attribute minCount {0},
+            attribute maxCount {-1}
+        )        
+        else if ($ecard/matches(., '^\s*\d+\s*$')) then (
+            attribute minCount {normalize-space($ecard)},
+            attribute maxCount {normalize-space($ecard)}
+        ) 
+        else if ($ecard/matches(., '^\s*\d+\s*-\s*\d+\s*$')) then
+            let $limits := 
+                tokenize(replace($ecard, '\s*(\d+)\s*-\s*(\d+)\s*$', '$1#$2'), '#')
+            return (                        
+                attribute minCount {$limits[1]},
+                attribute maxCount {$limits[2]}
+            )
+        else error(QName((), 'SYNTAX_ERROR'), concat('Invalid cardinality: ', $ecard))        
+};        
+
+(:
+======================================================================================================================
+:)
 (:~
  : Expansion of a shax document, step 3.
  :
@@ -886,310 +1168,62 @@ declare function f:expandShax3RC_choice($n as node())
         }</shax:xone>
 };
 
+
+(:
+============================================================================================================
+:)
+(:
 (:~
- : Expansion of a shax document, step 4.
+ : Edits multipls choices. Rules:
  :
- :    foo:bar       => pshape
- :
- : Content:
- : - @name                              # the property name
- : - @type |                            # references a datatype or object type
- :     @base, @facet*, value-elem* |    # local definition of a datatype
- :     @class, property-elems           # local definition of an object type
- : - @kind                              # constraint - IRI, blank node, both?
- :
- : Note:
- : - @type should not be combined with @class, as @class should be part 
- :         of the type definition
- : - @kind can be used in order to allow blank nodes or to enforce IRIs
- :) 
-declare function f:expandShax4RC($n as node())
+ : (a) new cardinality = 
+ :     current cardinality if one is true:
+ :     - current cardinality not set
+ :     - $multiplyMaxCardWith not set 
+ :     (0 - $multiplyMaxCardWith) if all is true:
+ :     - current name = shax:choice
+ :     - current maxCard>1
+ :     otherwise: (0 - current maxCard * $multiplyMaxCardWith)
+ : (b) new element name =
+ :     shax:pgroup if all is true:
+ :     - current name = shax:choice
+ :     - max(current maxCard, $multiplyMaxCardWith) > 1
+ :     otherwise: current name
+ : (c) new element content = :  
+ :     current content recursively transformed ($multiplyMaxCardWith not set), if one is true:
+ :     - current name != shax:choice
+ :     - new maxCard = 1
+ :     otherwise: shax:alternative/* recursively transformed ($multiplyMaxCardWith = $n/@card ! maxCard(.)) 
+ :)
+declare function f:expandShax31cRC($n as node(), $multiplyMaxCardWith as xs:integer?)
         as node()* {
     typeswitch($n)
-    case element(shax:shape) | 
-         element(shax:xone) | 
-         element(shax:pgroup) | 
-         element(shax:dataType) 
-    return
-        element {node-name($n)} {
-            f:namespaceNodes($n),        
-            for $a in $n/@* return f:expandShax4RC($a),
-            for $c in $n/node() return f:expandShax4RC($c)
-        }
-        
+
     case element() return
-        if ($n/self::shax:*) then
-            element {node-name($n)} {
-                f:namespaceNodes($n),            
-                for $a in $n/@* return f:expandShax4RC($a),
-                for $c in $n/node() return f:expandShax4RC($c)
-            }
-            
-        (: property element :)
-        else
-            let $propUse := $n
-            (: property reference is implicit - absence of @type :)
-            let $propRef :=
-                if ($propUse/@type) then () 
-                else
-                    $propUse
-                    /ancestor::shax:models/shax:model
-                    /shax:property[resolve-QName(@name, .) eq node-name($n)]
-
-            let $propDecl := ($propRef, $propUse)[1]
-            
-            let $kindAtt := $propDecl/@kind/attribute nodeKind {i:shaclNodeKind(.)}
-            let $path := ($propRef/@name/resolve-QName(., ..), node-name($propUse))[1]
-            let $baseAtt := $propDecl/@base/attribute base {.}            
-            let $typeAtt := $propDecl/@type/attribute type {.}            
-            let $classAtt := $propDecl/@class/attribute class {.}     
-            let $orderedAtt := $propDecl/@ordered/attribute ordered {.}
-            let $facetAtts := f:getShaclFacets_atts($propDecl)            
-            let $facetElems := f:getShaclFacets_elems($propDecl)
-            let $cardAtt := f:getPropertyCardinality($propUse)
-            return                
-                <shax:pshape path="{$path}">{
-                    f:namespaceNodes($propDecl),   
-                    $baseAtt,
-                    $typeAtt,
-                    $kindAtt,
-                    $classAtt,
-                    $cardAtt,
-                    $orderedAtt,
-                    $facetAtts,
-                    $facetElems
-                }</shax:pshape>
-    case attribute(card) return
-        f:getPropertyCardinality($n/..)
-    default return $n                
-};        
-
-(:~
- : Expansion of a shax document, step 5.
- :
- :    *:dataType  => shape
- :
- : The shape has a type and an optional base attribute, as
- : well as facet attributes.
- :) 
-declare function f:expandShax5RC($n as node())
-        as node()? {
-    typeswitch($n)
-    case element(shax:dataType) return
-        let $baseAtt := $n/@base/attribute base {.} 
-        let $itemTypeAtt := $n/@itemType/attribute itemType {.}        
-        let $containerAtt := $n/@container/attribute container {.}        
-        let $memberTypesAtt := $n/@memberTypes/attribute memberTypes {.}        
-        let $typeAtt := $n/@type/attribute type {.}
-        let $minSizeAtt := $n/@minSize/attribute minSize {.}
-        let $maxSizeAtt := $n/@maxSize/attribute maxSize {.}        
-        let $facetAtts := f:getShaclFacets_atts($n)
-        let $facetElems := f:getShaclFacets_elems($n)        
-        return
-            <shax:shape name="{$n/@name}">{
-                f:namespaceNodes($n),
-                $baseAtt,
-                $itemTypeAtt, 
-                $containerAtt,
-                $memberTypesAtt,
-                $minSizeAtt,
-                $maxSizeAtt,
-                $typeAtt,
-                $facetAtts,
-                $facetElems
-            }</shax:shape>
-        
-    case element() return
-        element {node-name($n)} {
-            f:namespaceNodes($n),        
-            for $a in $n/@* return f:expandShax5RC($a),
-            for $c in $n/node() return f:expandShax5RC($c)
-        }
-    default return $n        
-};        
-
-(:~
- : Expansion of a shax document, step 6.
- :
- :    pgroup            => <and>...</and> | 
- :                         <shape><and>...</and></shape>
- 
- :    excludeProperties => 
- :    <not><pshape/></not> 
- :    |
- :    <shape><not><pshape/></not></shape>
- :    | 
- :    <not>
- :       <shape>
- :          <or>
- :             <pshape/>...
- :          </or>
- :       </shape>
- :    </not> 
- :    |
- :    <shape>...</shape>
- :
- :    @type             => @datatype | @node
- :    @base             => @datatype | @node
- :    @itemType         => @itemDatatype | @itemNode 
- :
- : If the @type/@base/@itemType/@itemBase contains the name 
- : of a shape, it is translated into a @node (@itemNode) constraint, 
- : otherwise into a @datatype (@itemDatatype) constraint.
- :
- : @param n a node to be processed recursively
- : @param shapeNames the names of all shapes
- : @return the processed node
- :) 
-declare function f:expandShax6RC($n as node(), $shapeNames as xs:QName*)
-        as node()? {
-    typeswitch($n)
-    
-    (: shax:pgroup => 
-                      <shax:and>...</shax:and> | 
-          <shax:shape><shax:and>...</shax:and></shax:shape> :)
-    case element(shax:pgroup) return
-        let $and :=
-            <shax:and docum="choice branch comprising several properties">{
-                for $a in $n/@* return f:expandShax6RC($n, $shapeNames),
-                for $c in $n/node() return f:expandShax6RC($c, $shapeNames)            
-            }</shax:and>
-        return
-            if ($n/(parent::shax:shape, parent::shax:pshape)) then $and
-            else 
-                <shax:shape docum="choice branch comprising a single property">{$and}</shax:shape>
-                
-    (: shax:excludeProperties => 
-                      <shax:not><shax:pshape/></shax:not> |
-          <shax:shape><shax:not><shax:pshape/></shax:not></shax:shape> |
-           
-                      <shax:not><shax:shape><shax:or>...</shax:or></shax:shape></shax:not> |
-          <shax:shape><shax:not><shax:shape><shax:or>...</shax:or></shax:shape></shax:not></shax:shape>
-     :)
-    case element(shax:excludeProperties) return
-        let $names := $n/@iris/tokenize(normalize-space(.), ' ') ! resolve-QName(., $n)
-        let $not :=
-            <shax:not docum="excludes the properties of alternative choice branches">{
-                if (count($names) eq 1) then
-                    <shax:pshape path="{$names}" minCount="1"/>
-                else
-                    <shax:shape>{                
-                        <shax:or>{
-                            $names ! <shax:pshape path="{.}" minCount="1"/>
-                        }</shax:or>
-                    }</shax:shape>
-            }</shax:not>
-        return
-            if ($n/(parent::shax:shape, parent::shax:pshape)) then $not
-            else <shax:shape>{$not}</shax:shape>
-                
-    case element() return
-        element {node-name($n)} {
-            f:namespaceNodes($n),        
-            for $a in $n/@* return f:expandShax6RC($a, $shapeNames),
-            for $c in $n/node() return f:expandShax6RC($c, $shapeNames)
-        }
-        
-    (: @type/@base references a shape => @node constraint
-       otherwise => @datatype constraint
-     :)
-    case attribute(type) | attribute(base) return
-        let $qname := resolve-QName($n, $n/..)
-        return
-            if ($qname = $shapeNames) then attribute node {$n}
-            else attribute datatype {$n}
-            
-    (: @itemType references a shape => @itemNode constraint
-       otherwise => @itemDatatype constraint
-     :)
-    case attribute(itemType) return
-        let $qname := resolve-QName($n, $n/..)
-        return
-            if ($qname = $shapeNames) then attribute itemNode {$n}
-            else attribute itemDatatype {$n}
-    default return $n        
-};     
-
-(:~
- : Constructs canonical shax attributes expressing type
- : facets.
- :
- : @param elem a shax element
- : @return shax attributes
- :)
-declare function f:getShaclFacets_atts($elem as element())
-        as attribute()* {
-    $elem/(@minInclusive, @min)[1]/attribute minInclusive {.},
-    $elem/(@maxInclusive, @max)[1]/attribute maxInclusive {.},       
-    $elem/(@minExclusive, @minEx)[1]/attribute minExclusive {.},
-    $elem/(@maxExclusive, @minEx)[1]/attribute maxExclusive {.},
-    $elem/(@minLength, @minLen)[1]/attribute minLength {.},
-    $elem/(@maxLength, @maxLen)[1]/attribute maxLength {.},       
-    $elem/@pattern/attribute pattern {.},        
-    $elem/@flags/attribute flags {.}        
-};
-
-(:~
- : Constructs canonical shax elements expressing type
- : facets.
- :
- : @param elem a shax element
- : @return shax elements
- :)
-declare function f:getShaclFacets_elems($elem as element())
-        as element()* {
-    $elem/shax:value
-};
-
-(:~
- : Returns true if a given element is a shax property node.
- :
- : @param elem the node to be checked
- : @return true if the element is a property node
- :)
-declare function f:isPropertyNode($elem as element())
-        as xs:boolean {
-    not($elem/self::shax:*)        
-};
-
-(:~
- : Returns SHACL attributes 'minCount' and/or 'maxCount' which
- : express the cardinality constraints of a property shape.
- :
- : @param p a shax property element
- : @return a 'minCount' and/or a 'maxCount' attribute
- :)
-declare function f:getPropertyCardinality($p as element())
-        as attribute()* {
-    let $ecard := ($p/@card, $p/ancestor::*[@defaultCard][1]/@defaultCard)[1]
-    return
-        if (not($ecard)) then (
-            attribute minCount {0},
-            attribute maxCount {-1}
-        )
-        else if ($ecard eq '?') then (
-            attribute minCount {0},
-            attribute maxCount {1}
-        )
-        else if ($ecard eq '+') then (
-            attribute minCount {1},
-            attribute maxCount {-1}
-        )
-        else if ($ecard eq '*') then (
-            attribute minCount {0},
-            attribute maxCount {-1}
-        )        
-        else if ($ecard/matches(., '^\s*\d+\s*$')) then (
-            attribute minCount {normalize-space($ecard)},
-            attribute maxCount {normalize-space($ecard)}
-        ) 
-        else if ($ecard/matches(., '^\s*\d+\s*-\s*\d+\s*$')) then
-            let $limits := 
-                tokenize(replace($ecard, '\s*(\d+)\s*-\s*(\d+)\s*$', '$1#$2'), '#')
-            return (                        
-                attribute minCount {$limits[1]},
-                attribute maxCount {$limits[2]}
+        let $card :=
+            if (not($n/@card) or empty($multiplyMaxCardWith)) then $n/@card
+            else f:adaptChoiceBranchCardinality($n/@card, $multiplyMaxCardWith)
+        let $maxCard := f:cardRangeFromCardDesc($card)[2]            
+        let $name :=
+            if (node-name($n) ne QName($f:URI_SHAX, 'choice') or $maxCard eq 1) then node-name($n)
+            else QName($f:URI_SHAX, 'shax:pgroup')
+        let $content :=
+            if (node-name($n) ne QName($f:URI_SHAX, 'choice') or $maxCard eq 1) then (
+                $n/(@* except @card) ! f:expandShax31cRC(., ()),
+                $n/node() ! f:expandShax31cRC(., ())
+            ) else (
+                $n/shax:alternative ! f:expandShax31cRC(., $maxCard)    
             )
-        else error(QName((), 'SYNTAX_ERROR'), concat('Invalid cardinality: ', $ecard))        
-};        
+        let $contentAtts := ( 
+            $content[self::attribute()][not(self::attribute(shax:card))], 
+            $card ! attribute card {.})
+        let $contentElems := $content except $contentAtts
+        return
+            element {$name} {$contentAtts, $contentElems}
+            
+     default return $n       
+};    
+:)
+
+
 

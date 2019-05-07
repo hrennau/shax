@@ -11,7 +11,7 @@
       <operation name="xsd" type="item()*" func="xsdOp">     
          <param name="shax" type="docFOX+" sep="SC" fct_minDocCount="1" pgroup="input"/>        
          <param name="odir" type="directory?" fct_dirExists="true"/>
-         <param name="ofile" type="xs:string?" default="#stdout"/>
+         <param name="ofile" type="xs:string?" default="schema"/>
          <param name="osuffixes" type="xs:string*"/>
          <pgroup name="input" minOccurs="1"/>   
       </operation>
@@ -140,7 +140,7 @@ declare function f:shax2xsd($models as element()+)
     let $models := f:normalizeShaxModelNamespaceBindings($models, $nsmap)
     
     (: construct schema components :)
-    let $comps := f:getXsdCompsRC($models, ())
+    let $comps := f:getXsdComps($models, ())
     
     (: partition schema components by target namespace :)
     let $tnsComps :=
@@ -172,6 +172,33 @@ declare function f:shax2xsd($models as element()+)
     return
         $schemas
 };        
+
+declare function f:getXsdComps($n as node(), $tns as xs:string?)
+        as node()* {
+    let $raw := f:getXsdCompsRC($n, $tns)
+    let $elemsWithRef := $raw//xs:element[@ref]
+    let $elemsWithRefComps :=
+        for $e in $elemsWithRef
+        let $qname := $e/resolve-QName(@ref, .)
+        group by $qname
+        let $tns := namespace-uri-from-QName($qname)
+        let $lname := local-name-from-QName($qname)        
+        return
+            <xs:element name="{$lname}" shax:tns="{$tns}">{
+                $e[1]/@type
+            }</xs:element>
+            
+    (: remove @type from elements with @ref :)
+    let $raw :=
+        for $r in $raw
+        return
+            copy $r_ := $r
+            modify delete nodes $r_//@type[../@ref]
+            return $r_
+    return
+        ($raw, $elemsWithRefComps)
+    
+};
 
 (:~
  : Recursive helper function of `getXsdComps`.
@@ -329,11 +356,12 @@ declare function f:getXsdCompsRC($n as node(), $tns as xs:string?)
                     let $useTypeName := f:editXsdTypeReference($typeName)
                     return
                         attribute type {$useTypeName}
-            let $ename :=
-                if ($ns eq $tns) then QName((), $lname)
-                else $qname
+            let $enameAtt :=
+                if ($ns eq $tns) then attribute name {QName((), $lname)}
+                else attribute ref {$qname}
             return
-            <xs:element name="{$ename}">{
+            <xs:element>{
+                $enameAtt,
                 f:namespaceNodes($n),
                 $cardAtts,
                 $type,

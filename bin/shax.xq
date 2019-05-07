@@ -1,7 +1,7 @@
 (:
  : shax - 
  :
- : @version 2019-02-17T22:29:19.759+01:00 
+ : @version 2019-05-07T22:17:43.235+02:00 
  :)
 
 import module namespace tt="http://www.ttools.org/xquery-functions" at
@@ -90,7 +90,7 @@ declare variable $toolScheme :=
       <pgroup name="input" minOccurs="1"/>
     </operation>
     <operation name="shacl" type="item()" func="shaclOp" mod="shax.xqm" namespace="http://www.ttools.org/shax/ns/xquery-functions">
-      <param name="shax" type="docFOX" sep="SC" pgroup="input"/>
+      <param name="shax" type="docFOX" sep="SC" fct_minDocCount="1" pgroup="input"/>
       <pgroup name="input" minOccurs="1"/>
       <param name="format" type="xs:string?" default="ttl" fct_values="xml, ttl"/>
       <param name="deep" type="xs:boolean?" default="false"/>
@@ -123,7 +123,7 @@ declare variable $toolScheme :=
     <operation name="xsd" type="item()*" func="xsdOp" mod="xsd.xqm" namespace="http://www.ttools.org/shax/ns/xquery-functions">
       <param name="shax" type="docFOX+" sep="SC" fct_minDocCount="1" pgroup="input"/>
       <param name="odir" type="directory?" fct_dirExists="true"/>
-      <param name="ofile" type="xs:string?" default="#stdout"/>
+      <param name="ofile" type="xs:string?" default="schema"/>
       <param name="osuffixes" type="xs:string*"/>
       <pgroup name="input" minOccurs="1"/>
     </operation>
