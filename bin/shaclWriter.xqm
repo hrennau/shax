@@ -321,7 +321,12 @@ declare function f:shaclxFromShaxExpandedRC($n as node(),
     
     case element(shax:import) return ()
     
-    default return <stx:UNKNOWN>{$n}</stx:UNKNOWN>
+    case element() return
+        <stx:UNKNOWN name="{$n/local-name()}" namespace="{$n/namespace-uri(.)}">{$n}</stx:UNKNOWN>       
+       
+    case text() return ()
+    
+    default return <stx:UNKNOWN_NODE>{$n}</stx:UNKNOWN_NODE>
 };
 
 (:~

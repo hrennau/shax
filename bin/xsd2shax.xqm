@@ -27,6 +27,7 @@ import module namespace tt="http://www.ttools.org/xquery-functions" at
 
 import module namespace i="http://www.ttools.org/shax/ns/xquery-functions" at
     "constants.xqm",
+    "namespaceTools.xqm",
     "shaclWriter.xqm",
     "shaxLoader.xqm",
     "schemaLoader.xqm",
@@ -57,8 +58,7 @@ declare function f:xsd2shaxOp($request as element())
     let $ignoreAnno := tt:getParam($request, 'ignoreAnno')
     let $nsmap := i:getTnsPrefixMap($schemas)
     
-    let $options := trace(
-        <options ignoreAnno="{$ignoreAnno}"/> , 'OPTIONS: ')
+    let $options := <options ignoreAnno="{$ignoreAnno}"/>
         
     return
         f:xsd2shax($options, $nsmap, $schemas)
@@ -92,8 +92,10 @@ declare function f:xsd2shax($options as element(options)?,
         return
             if (not($localTypes)) then $schemas00
             else
+            (:
                 let $_DEBUG := trace(count($localTypes),
-                    'Globalize local types, count: ') return        
+                    'Globalize local types, count: ') return
+             :)
                 f:schemasWithGlobalizedTypes($schemas00)
 
     (: properties :)
@@ -116,7 +118,7 @@ declare function f:xsd2shax($options as element(options)?,
     )
     (: finalize shax model :)
     let $raw := <shax:model defaultCard="1" z:xsdCount="{count($schemas)}">{$content}</shax:model>
-    let $final := tt:addNSBs($raw, $nsmap)
+    let $final := f:xsd2shax_namespaceFixup($raw, $nsmap)
     return $final    
         
 };        
@@ -419,6 +421,7 @@ declare function f:xsd2shax_typeContentItemsRC($n as node(),
                 $localDatatype/node()
             }
             
+    case text() return if (not($n/matches(., '\S')) and $n/../*) then () else $n            
     default return $n            
 };        
 
@@ -512,5 +515,21 @@ declare function f:xsd2shax_dataType($stype as element(xs:simpleType),
             if (empty($name)) then () else attribute name {$name},
             $content
         }</shax:dataType>
+};  
+
+declare function f:xsd2shax_namespaceFixup($model as element(shax:model),
+                                           $nsmap as element(zz:nsMap)?)
+        as element(shax:model) {
+    let $raw := tt:addNSBs($model, $nsmap)        
+    let $additionalNs :=
+        if ($model//nons:*) then namespace nons {'http://shax.org/ns/nonamespace'}
+        else ()
+    return        
+        element {node-name($raw)} {
+            f:namespaceNodes($raw),
+            $additionalNs,
+            $raw/(@*, node())            
+        }
 };        
+
 

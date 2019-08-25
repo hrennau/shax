@@ -84,84 +84,41 @@ declare function f:expandShax($models as element()+)
         as element() {
         
     (: *** recursively expand all imports :)
-    let $trans1 := f:loadShax($models)
+    let $trans0 := f:loadShax($models)
     
     (: *** add @card attributes (making default values explicit) :)
-    let $trans2 := f:expandShax1($trans1)        
+    let $trans1 := f:expandShax1($trans0)        
     
     (: *** replace references to substitution group heads by choice groups :)
-    let $trans3 :=
-        let $sgroups := trace( f:sgroupsFromShax($trans2) , 'SGROUPS: ')
-        return
-            if (empty(map:keys($sgroups))) then $trans2
-            else f:expandShax2RC($trans2, $sgroups)
+    let $trans2 := f:expandShax2($trans1)
    
     (: *** objectType => shape 
            pgroup     => shape
            choice     => xone 
            annotation => () :)   
-    let $trans4 := f:expandShax3($trans3)
-    let $trans41 := f:expandShax31($trans3)
-    let $trans4 := $trans41
+
+    let $trans3 := f:expandShax31($trans2)
     
     (: *** property => pshape :)
-    let $trans5 := f:expandShax4RC($trans4)
-    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans5.xml', $trans5)
+    let $trans4 := f:expandShax4($trans3)
     
     (: *** datatype => shape :)    
-    let $trans6 := f:expandShax5RC($trans5)
+    let $trans5 := f:expandShax5($trans4)
 
     (: *** pgroup => ...
            excludeProperties => ...
            @type, @base, @itemType => ... :)
-    let $trans7 := 
-        let $shapeNames := 
-            $trans6//(shax:shape, shax:pshape)/@name/resolve-QName(., ..)
-        return f:expandShax6RC($trans6, $shapeNames)
+    let $trans6 := f:expandShax6($trans5)
 
+    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans0.xml', $trans0)   
     let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans1.xml', $trans1)   
     let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans2.xml', $trans2)   
-    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans3.xml', $trans3)   
+    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans3.xml', $trans3)    
     let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans4.xml', $trans4)    
-    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans5.xml', $trans5)    
-    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans6.xml', $trans6)   
-    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans7.xml', $trans7)    
-    return $trans7
+    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans5.xml', $trans5)   
+    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans6.xml', $trans6)    
+    return $trans6
 };        
-
-(:~
- : Reports the substitution groups implied by a set of
- : SHAX documents. The result is a map representing each 
- : substitution group by an entry: the key is the qualified 
- : name of the group head, and the value is a sequence of 
- : the qualified names of all group members.
- :
- : @param SHAX a shax document
- : @return a map describing all substitution groups
- :)
-declare function f:sgroupsFromShax($models as element(shax:models))
-        as map(xs:QName, xs:QName+) {
-    let $elems := $models/shax:model/shax:property
-    return if (empty($elems/@substitutes)) then map{} else
-    
-    let $foldFunction :=
-        function($accum as map(xs:QName, xs:QName+), $item as element(shax:property)) 
-                as map(xs:QName, xs:QName+) {            
-            let $groups := $item/@substitutes/tokenize(normalize-space(.), ' ') ! resolve-QName(., $item)
-            return
-                if (empty($groups)) then $accum else
-                
-                (: add this property name to all substituted groups :)
-                let $itemName := resolve-QName($item/@name, $item)
-                return
-                    map:merge((
-                        $accum, 
-                        $groups ! (map:entry(., ($accum(.), $itemName)))
-                    ), map{"duplicates": "use-last"})
-         }
-    return
-        fold-left($elems, map{}, $foldFunction)
-};
 
 (:~
  : Expansion of shax documents, step 1.
@@ -212,6 +169,7 @@ declare function f:expandShax1RC($n as node(),
                 $n/@* ! f:expandShax1RC(., $defaultCards),                
                 $n/node() ! f:expandShax1RC(., $defaultCards)
             }
+    case text() return if (not($n/matches(., '\S')) and $n/../*) then () else $n            
     default return $n                
 };
 
@@ -228,6 +186,14 @@ declare function f:expandShax1RC($n as node(),
  : @TO.DO - if the group contains exactly one member which is not abstract,
  : replace the shax:choice by the child element representing that one member
  :) 
+declare function f:expandShax2($models as element(shax:models))
+        as node()* {
+    let $sgroups := f:sgroupsFromShax($models)
+    return
+        if (empty(map:keys($sgroups))) then $models
+        else f:expandShax2RC($models, $sgroups)        
+};
+
 declare function f:expandShax2RC($n as node(), $sgroups as map(xs:QName, xs:QName+))
         as node()* {
     typeswitch($n)
@@ -265,9 +231,13 @@ declare function f:expandShax2RC($n as node(), $sgroups as map(xs:QName, xs:QNam
                     for $a in $n/@* return f:expandShax2RC($a, $sgroups),
                     for $c in $n/node() return f:expandShax2RC($c, $sgroups)
                 }
+    case text() return if (not($n/matches(., '\S')) and $n/../*) then () else $n                
     default return $n                
 };
 
+(:~
+ : Expansion of a shax document, step 3.
+ :) 
 declare function f:expandShax31($models as element(shax:models))
         as node()* {
     let $trans31 := $models        
@@ -280,14 +250,14 @@ declare function f:expandShax31($models as element(shax:models))
     let $trans31g := f:expandShax31gRC($trans31f)
     let $trans31h := f:expandShax31hRC($trans31g)    
     
-    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans4a.xml', $trans31a) (: choices merged :)
-    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans4b.xml', $trans31b) (: cbranches wrapped :)   
-    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans4c.xml', $trans31c) (: multiple choices made pgroups :)    
-    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans4d.xml', $trans31d) (: multiple pgroups made singular :)
-    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans4e.xml', $trans31e) (: nested pgroups with card=1 are merged :)    
-    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans4f.xml', $trans31f) (: add @excludeProperties :)
-    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans4g.xml', $trans31g) (: shax:choice -> shax:xone, shax:alternative -> shax:shape :)
-    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans4h.xml', $trans31h) (: shax:group unwrapped  :)    
+    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans3a.xml', $trans31a) (: choices merged :)
+    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans3b.xml', $trans31b) (: cbranches wrapped :)   
+    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans3c.xml', $trans31c) (: multiple choices made pgroups :)    
+    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans3d.xml', $trans31d) (: multiple pgroups made singular :)
+    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans3e.xml', $trans31e) (: nested pgroups with card=1 are merged :)    
+    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans3f.xml', $trans31f) (: add @excludeProperties :)
+    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans3g.xml', $trans31g) (: shax:choice -> shax:xone, shax:alternative -> shax:shape :)
+    let $DUMMY := i:writeDebugXml(1, 'DEBUG-trans3h.xml', $trans31h) (: shax:group unwrapped  :)    
     return
         $trans31h
 };
@@ -302,11 +272,10 @@ declare function f:expandShax31aRC($n as node())
     
     case element(shax:choice) return
         let $expandedAtts := $n/@* ! f:expandShax31aRC(.)
-        let $expandedChildren := $n/node() ! f:expandShax31aRC(.)
-        
-        let $expanded := ($expandedAtts, $expandedChildren)
-        let $atts := $expanded[self::attribute()]
-        let $children := ($expanded except $atts)
+        let $expandedChildren := $n/node() ! f:expandShax31aRC(.)        
+        let $expandedItems := ($expandedAtts, $expandedChildren)
+        let $atts := $expandedItems[self::attribute()]
+        let $children := ($expandedItems except $atts)
         return
             element {node-name($n)} {
                 f:namespaceNodes($n),
@@ -322,18 +291,17 @@ declare function f:expandShax31aRC($n as node())
             $n/@* ! f:expandShax31aRC(.),
             $n/node() ! f:expandShax31aRC(.)
         }
+    case text() return if (not($n/matches(., '\S')) and $n/../*) then () else $n        
     default return $n        
 };        
 
 
 (:~
- : Expansion of a shax document, step 3.
- :
  : Transformations:
- :    objectType  => shape
- :    choice/x    => wrap in <alternative>
- :    pgroup      => shape  (too early?)
- :    @class      => @class, @targetClass
+ :    objectType         => <shape>...</shape>
+ :    x[parent::choice]  => <alternative><x>...</x></alternative>
+ :    annotation         => ()
+ :    @class             => @class, @targetClass
  :) 
 declare function f:expandShax31bRC($n as node())
         as node()* {
@@ -354,13 +322,9 @@ declare function f:expandShax31bRC($n as node())
         element {node-name($n)} {
             f:namespaceNodes($n),
             $n/@* ! f:expandShax31bRC(.),        
-            for $c in $n/*
-            return
-                <shax:alternative>{
-                    f:expandShax31bRC($c)
-                }</shax:alternative>
+            $n/* ! <shax:alternative>{f:expandShax31bRC(.)}</shax:alternative>
         }
-
+(:
     (: already now transform ? :)
     case element(shax:pgroup) return 
         <shax:shape> {
@@ -368,7 +332,7 @@ declare function f:expandShax31bRC($n as node())
             $n/@* ! f:expandShax31bRC(.),
             $n/node() ! f:expandShax31bRC(.)
         }</shax:shape>            
-
+:)
     case element() return 
         element {node-name($n)} {
             f:namespaceNodes($n),
@@ -380,6 +344,8 @@ declare function f:expandShax31bRC($n as node())
         $n,
         $n[parent::shax:objectType]/attribute targetClass {.}
     )
+    
+    case text() return if (not($n/matches(., '\S')) and $n/../*) then () else $n
     default return $n            
 };        
 
@@ -387,7 +353,7 @@ declare function f:expandShax31bRC($n as node())
  : Mapping choices with maxCard>1 to <pgroup>. Rules:
  : - each child of an alternative is transformed and its cardinality 
  :     is adapted (min=0, max=max(item) * max(choice)) 
- : - if  a transformed child is a choice with a new maxCard>1, the
+ : - if a transformed child is a choice with a new maxCard>1, the
  :     transformed child is transformed again (choice -> pgroup)
  :)
 declare function f:expandShax31cRC($n as node())
@@ -416,8 +382,9 @@ declare function f:expandShax31cRC($n as node())
                             else $adapted
             return <shax:pgroup card="1" fromChoiceWithCard="{$choice/@card}">{$ctrans2}</shax:pgroup>
         
-    case element() return 
-        f:expandShax31cRC_copy($n)
+    case element() return f:expandShax31cRC_copy($n)
+        
+    case text() return if (not($n/matches(., '\S')) and $n/../*) then () else $n        
     default return $n
 };    
 
@@ -434,7 +401,7 @@ declare function f:expandShax31dRC($n as node())
             let $ctrans2 := 
                 for $item in $ctrans
                 (: new card: min=0, max=product :)
-                let $newCard := f:multiplyMaxCardinality($pgroup, $item)
+                let $newCard := f:multiplyCardinalityRanges($pgroup, $item)
                 return
                     if ($item/@card eq $newCard) then $item 
                     else
@@ -450,8 +417,9 @@ declare function f:expandShax31dRC($n as node())
                             else $adapted
             return <shax:pgroup card="1" fromPgroupWithCard="{$pgroup/@card}">{$ctrans2}</shax:pgroup>
         
-    case element() return 
-        f:expandShax31dRC_copy($n)
+    case element() return f:expandShax31dRC_copy($n)
+    
+    case text() return if (not($n/matches(., '\S')) and $n/../*) then () else $n    
     default return $n
 };    
 
@@ -479,12 +447,12 @@ declare function f:expandShax31eRC($n as node())
             $elem/@* ! f:expandShax31eRC(.),
             $elem/node() ! f:expandShax31eRC(.)
         }
+        
+    case text() return if (not($n/matches(., '\S')) and $n/../*) then () else $n        
     default return $n
 };    
 
 (:~
- : Merging nested pgroups.
- :
  : Augment <alternative>s with <excludeProperties>.
  :)
 declare function f:expandShax31fRC($n as node())
@@ -515,6 +483,8 @@ declare function f:expandShax31fRC($n as node())
             $elem/@* ! f:expandShax31fRC(.),
             $elem/node() ! f:expandShax31fRC(.)
         }
+        
+    case text() return if (not($n/matches(., '\S')) and $n/../*) then () else $n        
     default return $n
 };    
 
@@ -545,21 +515,21 @@ declare function f:expandShax31gRC($n as node())
             $elem/node() ! f:expandShax31gRC(.)
     }
 
+    case text() return if (not($n/matches(., '\S')) and $n/../*) then () else $n
     default return $n
 };    
 
 (:~
- : Unwrapping shax:pgroup.
+ : Unwrapping shax:pgroup which is child of shax:pgroup or shax:shape.
  :)
 declare function f:expandShax31hRC($n as node())
         as node()* {
     typeswitch($n)
     case $pgroup as element(shax:pgroup) return
-        let $contents := (
-            $pgroup/node() ! f:expandShax31hRC(.)
-        )
-        return
-            if ($pgroup/(parent::shax:shape, parent::shax:pgroup) and $pgroup/@card eq '1') then 
+        let $contents := $pgroup/node() ! f:expandShax31hRC(.)
+        return        
+            if ($pgroup/(parent::shax:shape, parent::shax:pgroup)) then
+            (: if ($pgroup/(parent::shax:shape, parent::shax:pgroup) and $pgroup/@card eq '1') then :)            
                 $contents
             else
                 element {node-name($pgroup)} {
@@ -575,6 +545,7 @@ declare function f:expandShax31hRC($n as node())
             $elem/node() ! f:expandShax31hRC(.)
     }
 
+    case text() return if (not($n/matches(., '\S')) and $n/../*) then () else $n
     default return $n
 };    
 
@@ -594,6 +565,11 @@ declare function f:expandShax31dRC_copy($e as element())
         $e/@* ! f:expandShax31dRC(.),
         $e/node() ! f:expandShax31dRC(.)
     }
+};
+
+declare function f:expandShax4($models as element(shax:models))
+        as node()* {
+    f:expandShax4RC($models)        
 };
 
 (:~
@@ -616,17 +592,6 @@ declare function f:expandShax31dRC_copy($e as element())
 declare function f:expandShax4RC($n as node())
         as node()* {
     typeswitch($n)
-    case element(shax:shape) | 
-         element(shax:xone) | 
-         element(shax:pgroup) | 
-         element(shax:dataType) 
-    return
-        element {node-name($n)} {
-            f:namespaceNodes($n),        
-            for $a in $n/@* return f:expandShax4RC($a),
-            for $c in $n/node() return f:expandShax4RC($c)
-        }
-        
     case element() return
         if ($n/self::shax:*) then
             element {node-name($n)} {
@@ -688,8 +653,9 @@ declare function f:expandShax4RC($n as node())
                 }</shax:pshape>
                 
     (: @card :)            
-    case attribute(card) return
-        f:getPropertyCardinality($n/..)
+    case attribute(card) return f:getPropertyCardinality($n/..)
+    
+    case text() return if (not($n/matches(., '\S')) and $n/../*) then () else $n    
     default return $n                
 };        
 
@@ -701,6 +667,14 @@ declare function f:expandShax4RC($n as node())
  : The shape has a type and an optional base attribute, as
  : well as facet attributes.
  :) 
+declare function f:expandShax5($models as element(shax:models))
+        as node()* {
+    f:expandShax5RC($models)        
+};
+
+(:~
+ : Recursive helper function of f:expandShax5
+ :)
 declare function f:expandShax5RC($n as node())
         as node()? {
     typeswitch($n)
@@ -736,6 +710,12 @@ declare function f:expandShax5RC($n as node())
         }
     default return $n        
 };        
+
+declare function f:expandShax6($models as element(shax:models))
+        as node()* {
+    let $shapeNames := $models//(shax:shape, shax:pshape)/@name/resolve-QName(., ..)
+    return f:expandShax6RC($models, $shapeNames)        
+};
 
 (:~
  : Expansion of a shax document, step 6.
@@ -840,6 +820,40 @@ declare function f:expandShax6RC($n as node(), $shapeNames as xs:QName*)
 };     
 
 (:~
+ : Reports the substitution groups implied by a set of
+ : SHAX documents. The result is a map representing each 
+ : substitution group by an entry: the key is the qualified 
+ : name of the group head, and the value is a sequence of 
+ : the qualified names of all group members.
+ :
+ : @param SHAX a shax document
+ : @return a map describing all substitution groups
+ :)
+declare function f:sgroupsFromShax($models as element(shax:models))
+        as map(xs:QName, xs:QName+) {
+    let $elems := $models/shax:model/shax:property
+    return if (empty($elems/@substitutes)) then map{} else
+    
+    let $foldFunction :=
+        function($accum as map(xs:QName, xs:QName+), $item as element(shax:property)) 
+                as map(xs:QName, xs:QName+) {            
+            let $groups := $item/@substitutes/tokenize(normalize-space(.), ' ') ! resolve-QName(., $item)
+            return
+                if (empty($groups)) then $accum else
+                
+                (: add this property name to all substituted groups :)
+                let $itemName := resolve-QName($item/@name, $item)
+                return
+                    map:merge((
+                        $accum, 
+                        $groups ! (map:entry(., ($accum(.), $itemName)))
+                    ), map{"duplicates": "use-last"})
+         }
+    return
+        fold-left($elems, map{}, $foldFunction)
+};
+
+(:~
  : Constructs canonical shax attributes expressing type
  : facets.
  :
@@ -921,6 +935,8 @@ declare function f:getPropertyCardinality($p as element())
             )
         else error(QName((), 'SYNTAX_ERROR'), concat('Invalid cardinality: ', $ecard))        
 };        
+
+(:
 
 (:
 ======================================================================================================================
@@ -1225,5 +1241,6 @@ declare function f:expandShax31cRC($n as node(), $multiplyMaxCardWith as xs:inte
 };    
 :)
 
+:)
 
 
